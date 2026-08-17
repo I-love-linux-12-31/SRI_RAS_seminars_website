@@ -16,8 +16,17 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+
+# Куки только по https. По умолчанию — как SECURE_SSL_REDIRECT: обе настройки
+# отвечают на один вопрос «сайт отдаётся по TLS?», и расходиться им нельзя.
+#
+# Если оставить их включёнными на сайте без TLS, браузер просто не сохранит
+# ни csrftoken, ни сессию, и любая форма упрётся в «CSRF cookie not set» —
+# при верном CSRF_TRUSTED_ORIGINS, отчего причина выглядит совсем другой.
+# Отдельные переменные оставлены на случай, когда TLS терминируется снаружи,
+# а сюда трафик идёт по http без заголовка X-Forwarded-Proto.
+SESSION_COOKIE_SECURE = env.bool("SESSION_COOKIE_SECURE", default=SECURE_SSL_REDIRECT)
+CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=SECURE_SSL_REDIRECT)
 SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
