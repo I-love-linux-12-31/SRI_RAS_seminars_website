@@ -46,7 +46,15 @@ COPY --from=builder --chown=app:app /app /app
 
 # Сам каталог /app создаётся WORKDIR от root, а COPY --chown задаёт владельца
 # только содержимому. Без этого gunicorn 26 не может создать /app/.gunicorn.
-RUN chown app:app /app && mkdir -p /app/media && chown app:app /app/media
+#
+# .keep в media — не украшение. На это место монтируется том, и владельца
+# каталога том перенимает у образа только тогда, когда каталог непустой:
+# у пустого получается root:root, и приложение, работающее под app, не может
+# сохранить ни фото докладчика, ни PDF аннотации.
+RUN chown app:app /app \
+    && mkdir -p /app/media \
+    && touch /app/media/.keep \
+    && chown -R app:app /app/media
 USER app
 
 EXPOSE 8000
