@@ -58,19 +58,36 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      # Ждём не базу, а готовое приложение: миграции гоняет web в своём
+      # entrypoint, и воркер, стартовавший одновременно с ним, падает на
+      # ещё не созданной таблице очереди.
+      web:
+        condition: service_healthy
     restart: unless-stopped
 
   nginx:
     image: nginx:1.27-alpine
+    environment:
+      # Без этой переменной штатный скрипт 15-local-resolvers.envsh молча
+      # выходит, не вычислив NGINX_LOCAL_RESOLVERS, и nginx падает на старте
+      # с «host not found in resolver "${NGINX_LOCAL_RESOLVERS}"».
+      NGINX_ENTRYPOINT_LOCAL_RESOLVERS: "1"
+      # Подставлять в шаблоне только адрес резолвера. Без фильтра envsubst
+      # прошёлся бы по всем переменным окружения и мог бы съесть переменные
+      # самого nginx ($host, $scheme и прочие).
+      NGINX_ENVSUBST_FILTER: "NGINX_LOCAL_RESOLVERS"
     volumes:
+      # Шаблон, а не готовый конфиг: адрес встроенного DNS у docker и podman
+      # разный, и точное значение подставляется при старте контейнера.
       # :z обязателен на системах с SELinux (RED OS, AltLinux, Fedora) —
       # без него контейнер не прочитает bind-монтированный файл.
-      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+      - ./deploy/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro,z
       - media:/srv/media:ro
     ports:
       - "8080:80"
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
