@@ -15,7 +15,7 @@ from apps.registrations.models import Registration
 from apps.seminars.models import Seminar, TalkSpeaker
 
 from .export import registrations_csv, registrations_xlsx
-from .forms import MaterialFormSet, SeminarForm, SiteSettingsForm, TalkFormSet
+from .forms import MaterialFormSet, SeminarForm, SiteSettingsForm, TalkFormSet, error_summary
 
 
 def back_to(request, fallback: str) -> str:
@@ -114,6 +114,7 @@ class SeminarEditView(StaffRequiredMixin, View):
             "talks": talks,
             "materials": materials,
             "is_new": seminar is None,
+            "errors": error_summary(form, talks, materials),
         }
         return render(request, self.template_name, context, status=status)
 
@@ -139,6 +140,7 @@ class SeminarEditView(StaffRequiredMixin, View):
                 # промежуточную модель с порядком, обычный save() её не тронет.
                 talk_form = next(f for f in talks.forms if f.instance.pk == talk.pk)
                 talk_form.sync_speakers(talk)
+                talk_form.save_photos()
 
             materials.instance = seminar
             materials.save()
@@ -294,7 +296,7 @@ class SiteSettingsView(StaffRequiredMixin, View):
 
     @staticmethod
     def context(form) -> dict:
-        return {"form": form, "nav": "manage", "tab": "settings"}
+        return {"form": form, "nav": "manage", "tab": "settings", "errors": error_summary(form)}
 
     def get(self, request):
         from apps.core.models import SiteSettings

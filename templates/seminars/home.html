@@ -27,6 +27,15 @@
         <dt>{% translate "Формат" %}</dt>
         <dd>{{ upcoming.get_seminar_format_display }}</dd>
       </dl>
+
+      {% if upcoming.poster %}
+        <figure class="poster">
+          <a href="{{ upcoming.poster.url }}" target="_blank" rel="noopener">
+            <img src="{{ upcoming.poster.url }}" loading="lazy"
+                 alt="{% translate 'Афиша ближайшего заседания' %}">
+          </a>
+        </figure>
+      {% endif %}
     </div>
 
     <div class="chronicle__main">

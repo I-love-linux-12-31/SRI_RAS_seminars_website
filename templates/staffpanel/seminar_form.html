@@ -12,12 +12,10 @@
 {% block panel_tabs %}{% endblock %}
 
 {% block panel_body %}
+{% include "staffpanel/_errors.html" %}
+
 <form class="adminform" method="post" enctype="multipart/form-data" novalidate>
   {% csrf_token %}
-
-  {% if form.non_field_errors %}
-    <p class="formerror">{{ form.non_field_errors.0 }}</p>
-  {% endif %}
 
   <fieldset class="fset">
     <legend class="fset__legend">{% translate "Когда и где" %}</legend>
@@ -54,6 +52,13 @@
           {{ talkform.id }}
           {% include "staffpanel/_field.html" with field=talkform.title_ru %}
           {% include "staffpanel/_field.html" with field=talkform.speakers_raw %}
+          {% comment %}Поля фотографий привязаны к конкретным докладчикам —
+          в клоне пустой строки им делать нечего.{% endcomment %}
+          <div data-clone-skip>
+            {% for photo in talkform.photo_fields %}
+              {% include "staffpanel/_field.html" with field=photo %}
+            {% endfor %}
+          </div>
           <details class="lang-extra">
             <summary>{% translate "Ещё" %}</summary>
             {% include "staffpanel/_field.html" with field=talkform.title_en %}

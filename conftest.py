@@ -37,6 +37,16 @@ def _isolate_cache():
     cache.clear()
 
 
+@pytest.fixture(autouse=True)
+def _isolate_media(settings, tmp_path):
+    """Загрузки из тестов — во временный каталог.
+
+    Иначе фотографии докладчиков и афиши, которые заливают проверки панели,
+    оседают в media/ проекта и остаются там после прогона.
+    """
+    settings.MEDIA_ROOT = tmp_path / "media"
+
+
 @pytest.fixture
 def db_task_backend(settings):
     """Переключить очередь задач на БД-бэкенд.

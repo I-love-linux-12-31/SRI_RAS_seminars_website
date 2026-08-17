@@ -1,8 +1,10 @@
 """Проверки панели управления."""
 
-from datetime import timedelta
+from datetime import datetime, time, timedelta
+from io import BytesIO
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.urls import reverse
 from django.utils import timezone
@@ -10,8 +12,18 @@ from django.utils import timezone
 from apps.registrations.models import Registration
 from apps.seminars.models import Seminar, Speaker, Topic
 from apps.seminars.tests.factories import add_talk, make_seminar, make_topic
+from apps.staffpanel.forms import PHOTO_PREFIX
 
 pytestmark = pytest.mark.django_db
+
+
+def image_upload(name: str = "photo.png") -> SimpleUploadedFile:
+    """Настоящий PNG: ImageField проверяет содержимое, а не расширение."""
+    from PIL import Image
+
+    buffer = BytesIO()
+    Image.new("RGB", (4, 4), "white").save(buffer, format="PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
 
 
 @pytest.fixture
@@ -137,11 +149,13 @@ def test_list_counts_registrations(as_secretary):
 # --- Создание и правка --------------------------------------------------------
 
 
-def seminar_payload(topic: Topic, **overrides) -> dict:
+def seminar_payload(topic: Topic | str, **overrides) -> dict:
     data = {
         "date": (timezone.localdate() + timedelta(days=20)).isoformat(),
         "start_time": "11:00",
-        "topic": topic.pk,
+        # Тематика вводится названием, а не выбирается из списка, поэтому
+        # годится и название несуществующей — её заведёт сама форма.
+        "topic": topic if isinstance(topic, str) else topic.name_ru,
         "title_ru": "Новое заседание про плазму",
         "title_en": "",
         "abstract_ru": "",
@@ -242,6 +256,231 @@ def test_invalid_form_does_not_create_anything(as_secretary):
     assert response.status_code == 422
     assert Seminar.objects.count() == 0
     assert Speaker.objects.count() == 0, "докладчики не должны создаваться при откате"
+
+
+def test_edit_form_prefills_date_and_time(as_secretary):
+    """Русская локаль печатает «17.08.2026», а <input type="date"> ждёт ISO.
+
+    Без явного формата поле при правке открывалось пустым, и заседание
+    сохранялось без даты — точнее, не сохранялось вовсе.
+    """
+    seminar = make_seminar(
+        timezone.localdate() + timedelta(days=20),
+        start_time=time(15, 30),
+        registration_closes_at=timezone.make_aware(
+            datetime.combine(timezone.localdate() + timedelta(days=18), time(18, 0))
+        ),
+    )
+
+    content = as_secretary.get(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk})
+    ).content.decode()
+
+    assert f'value="{seminar.date:%Y-%m-%d}"' in content
+    assert 'value="15:30"' in content
+    assert f'value="{seminar.date - timedelta(days=2):%Y-%m-%d}T18:00"' in content
+
+
+# --- Сводка ошибок --------------------------------------------------------------
+
+
+def test_invalid_form_lists_problems_above_the_form(as_secretary):
+    topic = make_topic()
+
+    response = as_secretary.post(
+        reverse("staffpanel:seminar_create"), seminar_payload(topic, title_ru="", date="")
+    )
+
+    content = response.content.decode()
+    assert "Не сохранено" in content
+    assert "Дата: Обязательное поле." in response.context["errors"]
+    assert "Тема заседания: Обязательное поле." in response.context["errors"]
+
+
+def test_summary_collects_errors_from_talks_and_materials(as_secretary):
+    """Ошибка во вложенной форме иначе видна только при прокрутке до неё."""
+    topic = make_topic()
+    payload = seminar_payload(
+        topic,
+        **{
+            "talks-0-speakers_raw": "АБ",
+            "materials-TOTAL_FORMS": "1",
+            "materials-0-kind": "slides",
+            "materials-0-title_ru": "Презентация",
+            "materials-0-url": "",
+        },
+    )
+
+    errors = as_secretary.post(reverse("staffpanel:seminar_create"), payload).context["errors"]
+
+    assert "Докладчики: Слишком короткое имя докладчика: «АБ»" in errors
+    assert "Приложите файл или укажите ссылку." in errors
+
+
+def test_saved_form_has_no_summary(as_secretary):
+    content = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
+
+    assert "formsummary" not in content
+
+
+# --- Тематика -------------------------------------------------------------------
+
+
+def test_topic_field_suggests_existing_topics(as_secretary):
+    make_topic()
+
+    content = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
+
+    assert '<datalist id="topic-options">' in content
+    assert '<option value="Физика космической плазмы"></option>' in content
+
+
+def test_known_topic_is_matched_by_name(as_secretary):
+    topic = make_topic()
+
+    as_secretary.post(
+        reverse("staffpanel:seminar_create"),
+        seminar_payload("  физика КОСМИЧЕСКОЙ плазмы "),
+    )
+
+    assert Topic.objects.count() == 1, "регистр и лишние пробелы не должны плодить рубрики"
+    assert Seminar.objects.get().topic == topic
+
+
+def test_unknown_topic_is_created_from_free_input(as_secretary):
+    topic = make_topic()
+
+    response = as_secretary.post(
+        reverse("staffpanel:seminar_create"), seminar_payload("Космическая погода")
+    )
+
+    assert response.status_code == 302
+    created = Topic.objects.get(name_ru="Космическая погода")
+    assert created.slug == "kosmicheskaya-pogoda", "адрес нужен латиницей: slugify её не делает"
+    assert created.short_ru == "Космическая погода"
+    assert created.order > topic.order, "новая рубрика встаёт в конец списка"
+    assert Seminar.objects.get().topic == created
+
+
+def test_new_topic_is_not_created_when_form_is_invalid(as_secretary):
+    """Опечатка в соседнем поле не должна оставлять рубрику в справочнике."""
+    make_topic()
+
+    as_secretary.post(
+        reverse("staffpanel:seminar_create"),
+        seminar_payload("Космическая погода", title_ru=""),
+    )
+
+    assert Topic.objects.count() == 1
+
+
+def test_topic_left_without_seminars_is_dropped(as_secretary):
+    """Иначе опечатку в названии нечем убрать: справочника рубрик в панели нет."""
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    mistyped = seminar.topic
+
+    as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
+        seminar_payload("Астробиология"),
+    )
+
+    assert not Topic.objects.filter(pk=mistyped.pk).exists()
+    assert Seminar.objects.get(pk=seminar.pk).topic.name_ru == "Астробиология"
+
+
+def test_topic_with_other_seminars_survives(as_secretary):
+    topic = make_topic()
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5), topic=topic, suffix="a")
+    make_seminar(timezone.localdate() + timedelta(days=9), topic=topic, suffix="b")
+
+    as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
+        seminar_payload("Астробиология"),
+    )
+
+    assert Topic.objects.filter(pk=topic.pk).exists()
+
+
+# --- Фотографии докладчиков -----------------------------------------------------
+
+
+def talk_payload(talk, speaker, **extra) -> dict:
+    """Правка заседания с одним уже сохранённым докладом."""
+    return {
+        "talks-INITIAL_FORMS": "1",
+        "talks-0-id": talk.pk,
+        "talks-0-title_ru": talk.title_ru,
+        "talks-0-speakers_raw": f"{speaker.full_name_ru} — {speaker.affiliation_ru}",
+    } | extra
+
+
+def test_photo_fields_appear_only_for_saved_speakers(as_secretary):
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
+    speaker = talk.ordered_speakers[0]
+
+    edit = as_secretary.get(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk})
+    ).content.decode()
+    create = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
+
+    assert f'name="talks-0-{PHOTO_PREFIX}{speaker.pk}"' in edit
+    assert "Фото: Иванов Иван Иванович" in edit
+    assert PHOTO_PREFIX not in create, "докладчика ещё нет — привязывать фото не к чему"
+
+
+def test_speaker_photo_is_uploaded(as_secretary):
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
+    speaker = talk.ordered_speakers[0]
+    payload = seminar_payload(
+        seminar.topic,
+        **talk_payload(talk, speaker, **{f"talks-0-{PHOTO_PREFIX}{speaker.pk}": image_upload()}),
+    )
+
+    response = as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload
+    )
+
+    assert response.status_code == 302
+    speaker.refresh_from_db()
+    assert speaker.photo.name.startswith("speakers/")
+
+
+def test_speaker_photo_survives_untouched_form(as_secretary):
+    """Сохранение заседания без нового файла не должно стирать прежнее фото."""
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
+    speaker = talk.ordered_speakers[0]
+    speaker.photo = image_upload()
+    speaker.save()
+    was = speaker.photo.name
+
+    as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
+        seminar_payload(seminar.topic, **talk_payload(talk, speaker)),
+    )
+
+    speaker.refresh_from_db()
+    assert speaker.photo.name == was
+    assert speaker.photo.storage.exists(was), "файл не должен исчезнуть с диска"
+
+
+def test_speaker_photo_can_be_cleared(as_secretary):
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
+    speaker = talk.ordered_speakers[0]
+    speaker.photo = image_upload()
+    speaker.save()
+    payload = seminar_payload(
+        seminar.topic,
+        **talk_payload(talk, speaker, **{f"talks-0-{PHOTO_PREFIX}{speaker.pk}-clear": "on"}),
+    )
+
+    as_secretary.post(reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload)
+
+    speaker.refresh_from_db()
+    assert not speaker.photo
 
 
 # --- Клонирование -------------------------------------------------------------

@@ -6,22 +6,37 @@ from django.contrib.postgres.search import SearchVector
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.i18n import TranslatedMixin
 
 RUSSIAN_SEARCH_CONFIG = "russian"
 
+# Транслитерация для адресов тематик: slugify() выбрасывает всё нелатинское,
+# и у заведённой из панели «Физики планет» адрес получился бы пустым.
+CYRILLIC_TO_LATIN = str.maketrans(
+    dict(zip("абвгдеёзийклмнопрстуфхцыэ", "abvgdeezijklmnoprstufhcye", strict=True))
+    | {"ж": "zh", "ч": "ch", "ш": "sh", "щ": "shch", "ю": "yu", "я": "ya", "ъ": "", "ь": ""}
+)
+
+
+def slugify_ru(text: str) -> str:
+    """Адрес из русского названия: «Малые тела» → «malye-tela»."""
+    return slugify(text.lower().translate(CYRILLIC_TO_LATIN))
+
 
 class Topic(TranslatedMixin, models.Model):
     """Тематическая рубрика заседания."""
+
+    SHORT_LIMIT = 40
 
     slug = models.SlugField(_("код"), max_length=40, unique=True)
     name_ru = models.CharField(_("название"), max_length=120)
     name_en = models.CharField(max_length=120, blank=True, default="")
     # Короткая форма для плашек в архиве, где полное название не помещается.
-    short_ru = models.CharField(_("короткое название"), max_length=40)
-    short_en = models.CharField(max_length=40, blank=True, default="")
+    short_ru = models.CharField(_("короткое название"), max_length=SHORT_LIMIT)
+    short_en = models.CharField(max_length=SHORT_LIMIT, blank=True, default="")
     order = models.PositiveSmallIntegerField(_("порядок"), default=0)
 
     class Meta:
@@ -31,6 +46,43 @@ class Topic(TranslatedMixin, models.Model):
 
     def __str__(self):
         return self.name_ru
+
+    # --- Ввод названием ------------------------------------------------------
+    # В панели тематика вводится текстом с подсказкой, а не выбирается из
+    # списка: отдельного справочника рубрик в интерфейсе нет, и заводить новую
+    # рубрику приходилось бы через код.
+
+    @classmethod
+    def by_name(cls, name: str) -> "Topic | None":
+        """Найти тематику по любому из её названий, без учёта регистра."""
+        return cls.objects.filter(
+            models.Q(name_ru__iexact=name)
+            | models.Q(name_en__iexact=name)
+            | models.Q(short_ru__iexact=name)
+            | models.Q(short_en__iexact=name)
+        ).first()
+
+    @classmethod
+    def create_named(cls, name: str) -> "Topic":
+        """Завести тематику по названию, введённому в панели."""
+        return cls.objects.create(
+            slug=cls._build_slug(name),
+            name_ru=name,
+            short_ru=Truncator(name).chars(cls.SHORT_LIMIT),
+            # В конец списка: у заведённых заранее рубрик порядок расставлен
+            # осмысленно, и новая не должна вклиниваться в его начало.
+            order=(cls.objects.aggregate(last=models.Max("order"))["last"] or 0) + 1,
+        )
+
+    @classmethod
+    def _build_slug(cls, name: str) -> str:
+        # Запас до max_length оставлен под суффикс с номером.
+        base = slugify_ru(name)[:36] or "topic"
+        slug, n = base, 2
+        while cls.objects.filter(slug=slug).exists():
+            slug = f"{base}-{n}"
+            n += 1
+        return slug
 
 
 class Speaker(TranslatedMixin, models.Model):

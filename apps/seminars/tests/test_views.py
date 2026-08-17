@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 
@@ -53,6 +54,30 @@ def test_home_lists_recent_archive():
     )
 
     assert "Прошедшее заседание" in get(reverse("seminars:home"))
+
+
+# --- Афиша --------------------------------------------------------------------
+
+
+def test_poster_is_shown_on_seminar_page():
+    seminar = make_seminar(timezone.localdate() + timedelta(days=3), poster=png("afisha.png"))
+
+    content = get(seminar.get_absolute_url())
+
+    assert seminar.poster.url in content
+    assert "Афиша" in content
+
+
+def test_poster_is_shown_on_home_page():
+    seminar = make_seminar(timezone.localdate() + timedelta(days=3), poster=png("afisha.png"))
+
+    assert seminar.poster.url in get(reverse("seminars:home"))
+
+
+def test_page_without_poster_has_no_broken_image():
+    seminar = make_seminar(timezone.localdate() + timedelta(days=3))
+
+    assert 'class="poster"' not in get(seminar.get_absolute_url())
 
 
 # --- Доступ -------------------------------------------------------------------
@@ -301,3 +326,14 @@ def get(url: str) -> str:
     from django.test import Client
 
     return Client().get(url).content.decode()
+
+
+def png(name: str) -> SimpleUploadedFile:
+    """Настоящий PNG: ImageField проверяет содержимое, а не расширение."""
+    from io import BytesIO
+
+    from PIL import Image
+
+    buffer = BytesIO()
+    Image.new("RGB", (4, 4), "white").save(buffer, format="PNG")
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")

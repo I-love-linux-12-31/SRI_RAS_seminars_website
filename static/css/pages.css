@@ -653,6 +653,27 @@
   margin-top: 18px;
 }
 
+/* Афиша заседания. Ширину задаёт колонка, высоту — само изображение:
+   макеты афиш приходят и вертикальные, и горизонтальные. */
+.poster {
+  margin: 18px 0 0;
+}
+.poster img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--rule);
+  background: var(--surface-raised);
+}
+.poster__cap {
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+}
+
 .matlist {
   list-style: none;
   margin: 12px 0 0;

@@ -5,6 +5,8 @@
 {% block panel_title %}{% translate "Настройки сайта" %}{% endblock %}
 
 {% block panel_body %}
+{% include "staffpanel/_errors.html" %}
+
 {% if not form.instance.privacy_policy_text %}
   <div class="preview-note">
     <p><strong>{% translate "Текст согласия на обработку персональных данных не заполнен." %}</strong></p>

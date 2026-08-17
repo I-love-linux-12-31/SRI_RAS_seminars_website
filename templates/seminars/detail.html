@@ -85,6 +85,16 @@
         {% endif %}
       </div>
 
+      {% if seminar.poster %}
+        <figure class="poster">
+          <a href="{{ seminar.poster.url }}" target="_blank" rel="noopener">
+            <img src="{{ seminar.poster.url }}" loading="lazy"
+                 alt="{% translate 'Афиша заседания' %}">
+          </a>
+          <figcaption class="poster__cap">{% translate "Афиша — открыть в полном размере" %}</figcaption>
+        </figure>
+      {% endif %}
+
       {% if seminar.materials.all %}
         <div class="panel">
           <p class="mono-label">{% translate "Материалы" %}</p>
