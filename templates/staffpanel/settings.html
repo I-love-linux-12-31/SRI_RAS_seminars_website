@@ -1,0 +1,63 @@
+{% extends "staffpanel/_base_panel.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Настройки сайта" %} — {{ block.super }}{% endblock %}
+{% block panel_title %}{% translate "Настройки сайта" %}{% endblock %}
+
+{% block panel_body %}
+{% if not form.instance.privacy_policy_text %}
+  <div class="preview-note">
+    <p><strong>{% translate "Текст согласия на обработку персональных данных не заполнен." %}</strong></p>
+    <p>{% translate "Пока поле пусто, страница «Обработка персональных данных» сообщает посетителям, что формулировка не утверждена. До публичного запуска текст нужно согласовать и вставить сюда." %}</p>
+  </div>
+{% endif %}
+
+<form class="adminform" method="post" novalidate>
+  {% csrf_token %}
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Организаторы" %}</legend>
+    <div class="fgrid">
+      {% include "staffpanel/_field.html" with field=form.chair_ru %}
+      {% include "staffpanel/_field.html" with field=form.chair_title_ru %}
+    </div>
+    <div class="fgrid">
+      {% include "staffpanel/_field.html" with field=form.secretary_ru %}
+      {% include "staffpanel/_field.html" with field=form.secretary_title_ru %}
+    </div>
+  </fieldset>
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Контакты" %}</legend>
+    {% include "staffpanel/_field.html" with field=form.email %}
+    {% include "staffpanel/_field.html" with field=form.address_ru %}
+  </fieldset>
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Заявки и уведомления" %}</legend>
+    {% include "staffpanel/_field.html" with field=form.registration_lead_hours %}
+    {% include "staffpanel/_field.html" with field=form.notify_on_registration %}
+    {% include "staffpanel/_field.html" with field=form.notify_email %}
+    {% include "staffpanel/_field.html" with field=form.retention_months %}
+  </fieldset>
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Персональные данные" %}</legend>
+    {% include "staffpanel/_field.html" with field=form.privacy_policy_text %}
+    {% include "staffpanel/_field.html" with field=form.privacy_policy_url %}
+  </fieldset>
+
+  <details class="lang-extra">
+    <summary>{% translate "Английские версии" %}</summary>
+    {% include "staffpanel/_field.html" with field=form.chair_en %}
+    {% include "staffpanel/_field.html" with field=form.chair_title_en %}
+    {% include "staffpanel/_field.html" with field=form.secretary_en %}
+    {% include "staffpanel/_field.html" with field=form.secretary_title_en %}
+    {% include "staffpanel/_field.html" with field=form.address_en %}
+  </details>
+
+  <div class="adminform__actions">
+    <button type="submit" class="btn btn--primary">{% translate "Сохранить" %}</button>
+  </div>
+</form>
+{% endblock %}

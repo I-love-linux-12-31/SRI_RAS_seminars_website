@@ -1,0 +1,81 @@
+{% extends "staffpanel/_base_panel.html" %}
+{% load i18n i18n_extras %}
+
+{% block title %}{% translate "Управление семинарами" %} — {{ block.super }}{% endblock %}
+
+{% block panel_actions %}
+  <a class="btn btn--primary btn--sm" href="{% url 'staffpanel:seminar_create' %}">+ {% translate "Новый семинар" %}</a>
+{% endblock %}
+
+{% block panel_body %}
+  <div class="stats">
+    {% for label, value in stats %}
+      <div class="stat">
+        <p class="stat__label">{{ label }}</p>
+        <p class="stat__value">{{ value }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if seminars %}
+    {% comment %}Одна разметка на все ширины: на узких экранах таблица
+    раскладывается строками через CSS. Переключать её скриптом нельзя —
+    сервер не знает ширину экрана и отдал бы не тот вариант.{% endcomment %}
+    <div class="table-wrap">
+      <table class="dtable">
+        <thead>
+          <tr>
+            <th>{% translate "Дата" %}</th>
+            <th>{% translate "Тема и докладчик" %}</th>
+            <th>{% translate "Статус" %}</th>
+            <th class="dtable__num">{% translate "Заявок" %}</th>
+            <th><span class="visually-hidden">{% translate "Действия" %}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in seminars %}
+            <tr>
+              <td data-label="{% translate 'Дата' %}" class="dtable__date">{{ s.date|date:"d.m.Y" }}</td>
+              <td data-label="{% translate 'Тема' %}">
+                <a class="dtable__title" href="{% url 'staffpanel:seminar_edit' s.pk %}">{{ s.title_ru }}</a>
+                <span class="dtable__sub">{{ s.topic.name_ru }}</span>
+              </td>
+              <td data-label="{% translate 'Статус' %}">
+                <span class="badge badge--{{ s.status }}">{{ s.get_status_display }}</span>
+                {% if s.is_past %}<span class="badge">{% translate "прошло" %}</span>{% endif %}
+              </td>
+              <td data-label="{% translate 'Заявок' %}" class="dtable__num">
+                <a href="{% url 'staffpanel:registrations' %}?seminar={{ s.pk }}">{{ s.registration_count }}</a>
+              </td>
+              <td class="dtable__acts">
+                <a class="btn btn--sm" href="{% url 'staffpanel:seminar_edit' s.pk %}">{% translate "Изменить" %}</a>
+                <form method="post" action="{% url 'staffpanel:seminar_toggle' s.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn--sm">
+                    {% if s.status == 'published' %}{% translate "Скрыть" %}{% else %}{% translate "Показать" %}{% endif %}
+                  </button>
+                </form>
+                <form method="post" action="{% url 'staffpanel:seminar_clone' s.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn--sm">{% translate "Копировать" %}</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <p class="empty__title">{% translate "Заседаний пока нет" %}</p>
+      <a class="btn btn--primary btn--sm" href="{% url 'staffpanel:seminar_create' %}">{% translate "Создать первое" %}</a>
+    </div>
+  {% endif %}
+
+  <div class="notes">
+    <div class="note-card">
+      <span class="note-card__tag">AUTO</span>
+      <p>{% translate "Прошедшие заседания уходят в архив автоматически на следующий день после даты проведения, регистрация на них закрывается. Отдельно ничего запускать не нужно." %}</p>
+    </div>
+  </div>
+{% endblock %}

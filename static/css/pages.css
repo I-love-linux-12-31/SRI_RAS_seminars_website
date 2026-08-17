@@ -1,0 +1,716 @@
+/* Разделы публичной части: главная, архив, страница заседания, «О семинаре». */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.section {
+  padding-block: clamp(30px, 4.5vw, 64px) 0;
+}
+.section--last {
+  padding-bottom: clamp(40px, 5vw, 80px);
+}
+.section__title {
+  margin: 0 0 22px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  font-weight: 500;
+}
+.section__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.section__bar--baseline {
+  margin-bottom: clamp(22px, 3vw, 36px);
+}
+.section__bar .section__title {
+  margin-bottom: 0;
+}
+
+.page-title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+
+.display {
+  margin: 16px 0 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(24px, 3.2vw, 40px);
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+
+.plain {
+  color: inherit;
+}
+.plain:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.lede {
+  margin: 20px 0 0;
+  font-size: 15px;
+  color: #31363d;
+  max-width: 44em;
+  text-wrap: pretty;
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 26px 0;
+}
+.rule--soft {
+  border-color: var(--rule-soft);
+  margin: 20px 0;
+}
+
+.count,
+.note {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-meta);
+  margin: 0;
+}
+.note {
+  margin-top: 14px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+.note--mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Главная: «Хроника» --------------------------------------------------- */
+
+.kicker {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kicker__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: blink 2.4s ease-in-out infinite;
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.chronicle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+}
+.chronicle__aside {
+  max-width: 22em;
+}
+.chronicle__day {
+  margin: 18px 0 0;
+  font-family: var(--font-serif);
+  font-size: clamp(56px, 9vw, 104px);
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+  font-weight: 300;
+}
+.chronicle__month {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.chronicle__main {
+  min-width: 0;
+}
+
+.deflist {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 11px 16px;
+  font-size: 13.5px;
+}
+.deflist dt {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+  padding-top: 2px;
+}
+.deflist dd {
+  margin: 0;
+  text-wrap: pretty;
+}
+.deflist--tight {
+  gap: 9px 14px;
+  margin-top: 12px;
+}
+
+.tag {
+  display: inline-block;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  border: 1px solid var(--rule);
+  padding: 4px 9px;
+  border-radius: 2px;
+}
+
+.person {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.person__photo {
+  flex: none;
+  width: 60px;
+  height: 74px;
+  background: #e6e2d8;
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+.person__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.person__name {
+  margin: 0;
+  font-weight: 600;
+  font-size: 15px;
+  text-wrap: pretty;
+}
+.person__aff {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 13px;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+/* --- Карточки «Порядок посещения» ----------------------------------------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card {
+  background: var(--surface-raised);
+  padding: clamp(18px, 2.2vw, 26px);
+}
+.card__head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+.card__num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+}
+.card h4 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 19px;
+}
+.card p {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+/* --- Компактный список заседаний ------------------------------------------ */
+
+.minilist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.minilist__link {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 4px 20px;
+  padding: 18px 4px;
+  border-top: 1px solid var(--rule);
+  color: inherit;
+}
+.minilist__link:hover {
+  background: #edeae2;
+  text-decoration: none;
+}
+.minilist__date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-meta);
+  padding-top: 4px;
+  white-space: nowrap;
+}
+.minilist__title {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+.minilist__who {
+  display: block;
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin-top: 5px;
+}
+.minilist--compact .minilist__link {
+  grid-template-columns: 1fr;
+  padding: 12px 2px;
+  gap: 4px;
+}
+.minilist--compact .minilist__title {
+  font-size: 15.5px;
+}
+
+/* --- Архив: фильтры ------------------------------------------------------- */
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: clamp(24px, 3vw, 40px);
+}
+.filters__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.search {
+  flex: 1 1 260px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--surface-raised);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0 13px;
+  min-height: var(--tap);
+}
+.search__icon {
+  color: var(--ink-meta);
+  font-size: 14px;
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  /* 16px, иначе iOS Safari зумит страницу при фокусе на поле. */
+  font-size: 16px;
+  padding: 11px 0;
+  outline: none;
+}
+.filters label {
+  min-width: 0;
+  max-width: 100%;
+}
+.filters select {
+  min-height: var(--tap);
+  border: 1px solid var(--rule);
+  background: var(--surface-raised);
+  border-radius: 2px;
+  padding: 0 12px;
+  font-size: 14px;
+  cursor: pointer;
+  /* Иначе select растягивается под самый длинный пункт: список заседаний
+     содержит полные названия и уводил страницу в горизонтальную прокрутку. */
+  max-width: 100%;
+  min-width: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.chip {
+  font-size: 12.5px;
+  padding: 8px 13px;
+  min-height: 38px;
+  cursor: pointer;
+  border-radius: 2px;
+  border: 1px solid #d2cdc1;
+  background: transparent;
+  color: var(--ink-muted);
+}
+.chip:hover {
+  border-color: var(--ink);
+}
+.chip--on {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* --- Архив: строки -------------------------------------------------------- */
+
+.rows {
+  border-bottom: 1px solid var(--rule);
+}
+.row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto;
+  gap: 6px 24px;
+  padding: 20px 0;
+  border-top: 1px solid var(--rule);
+  align-items: start;
+}
+.row__date {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.row__topic {
+  margin: 5px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.row__body {
+  min-width: 0;
+}
+.row__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.28;
+  text-wrap: pretty;
+}
+.row__who {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+.row__extra {
+  margin: 6px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-meta);
+}
+.row__side {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  padding-top: 2px;
+}
+
+@media (max-width: 760px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .row__meta {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+  .row__topic {
+    margin: 0;
+  }
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.badge--ok {
+  color: var(--ok-ink);
+  border-color: var(--ok-border);
+  background: var(--ok-bg);
+}
+
+.filelink {
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filelink__ext {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  border: 1px solid currentColor;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.empty {
+  border: 1px dashed #c9c4b7;
+  border-radius: var(--radius);
+  padding: 56px 24px;
+  text-align: center;
+}
+.empty__title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.pager {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 28px;
+}
+.pager__pos {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-meta);
+}
+
+/* --- Страница заседания --------------------------------------------------- */
+
+.back {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.preview-note {
+  margin: 16px 0 0;
+  padding: 11px 14px;
+  border: 1px solid var(--warn-border);
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  border-radius: 2px;
+  font-size: 13px;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(min(100%, 280px), 1fr);
+  gap: clamp(24px, 3.4vw, 52px);
+  align-items: start;
+  margin-top: clamp(20px, 3vw, 34px);
+}
+@media (max-width: 900px) {
+  .detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin: 0 0 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+}
+.crumbs__date {
+  color: var(--ink);
+  font-weight: 500;
+}
+.crumbs__past {
+  color: var(--accent);
+}
+
+.talks {
+  margin-top: clamp(22px, 3vw, 32px);
+  border-bottom: 1px solid var(--rule);
+}
+.talk {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 16px 28px;
+  padding: 20px 0;
+  border-top: 1px solid var(--rule);
+}
+.talk .person {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.talk .person + .person {
+  margin-top: 14px;
+}
+.talk__title {
+  margin: 7px 0 0;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.32;
+  text-wrap: pretty;
+}
+.talk__abstract {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+.talk__body .filelink {
+  margin-top: 10px;
+}
+
+.panel {
+  background: var(--surface-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.panel + .panel {
+  margin-top: 18px;
+}
+.panel--plain {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.panel p {
+  font-size: 14px;
+  text-wrap: pretty;
+}
+.panel__cta {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.matlist {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  font-size: 13.5px;
+}
+.matlist li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--rule-softer);
+}
+
+/* --- О семинаре ----------------------------------------------------------- */
+
+.about {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: clamp(24px, 3.4vw, 52px);
+  margin-top: clamp(24px, 3vw, 40px);
+}
+.about__name {
+  margin: 8px 0 0;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  line-height: 1.25;
+}
+.about__role {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+.about__contact {
+  margin: 8px 0 0;
+  font-size: 15px;
+}
+
+.topics {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+.topics li {
+  border-top: 1px solid #e2ded4;
+  padding: 9px 0;
+  font-size: 14.5px;
+  display: flex;
+  gap: 12px;
+}
+.topics__num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-faint);
+  padding-top: 3px;
+}
+
+.nav__cta {
+  flex: none;
+  margin-block: 9px;
+}

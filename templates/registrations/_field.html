@@ -1,0 +1,10 @@
+{% load i18n %}
+<label class="field-row {% if field.errors %}field-row--error{% endif %}">
+  <span class="field-row__label mono-label">
+    {{ field.label }}
+    {% if required %}<span class="field-row__req" aria-hidden="true">*</span>{% endif %}
+    {% if optional %}<span class="field-row__opt">{% translate "(необязательно)" %}</span>{% endif %}
+  </span>
+  {{ field }}
+  {% if field.errors %}<span class="field-row__err">{{ field.errors.0 }}</span>{% endif %}
+</label>

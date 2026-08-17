@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Обработка персональных данных" %} — {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="wrap section section--last">
+  <h2 class="page-title">{% translate "Обработка персональных данных" %}</h2>
+
+  {% if policy.privacy_policy_text %}
+    <div class="prose">{{ policy.privacy_policy_text|linebreaks }}</div>
+  {% else %}
+    {% comment %}Заглушка намеренно выглядит заглушкой: подсовывать вместо
+    согласия правдоподобный, но не согласованный текст — хуже, чем не иметь
+    его вовсе.{% endcomment %}
+    <div class="preview-note">
+      <p><strong>{% translate "Текст согласия ещё не утверждён." %}</strong></p>
+      <p>{% translate "Организаторы семинара готовят формулировку. До её утверждения страница носит служебный характер и не является публичной офертой или согласием в смысле 152-ФЗ." %}</p>
+    </div>
+    <div class="prose">
+      <p>{% translate "Планируемый состав обрабатываемых данных:" %}</p>
+      <ul>
+        <li>{% translate "ФИО — для оформления пропуска и списка участников;" %}</li>
+        <li>{% translate "организация — для оформления пропуска;" %}</li>
+        <li>{% translate "должность — опционально, для списка участников;" %}</li>
+        <li>{% translate "адрес электронной почты — для подтверждения и ссылки на видеоконференцию." %}</li>
+      </ul>
+      <p>{% blocktranslate with months=policy.retention_months %}Заявки хранятся {{ months }} месяцев после даты заседания, затем удаляются автоматически.{% endblocktranslate %}</p>
+      <p>{% translate "ФИО и организация передаются в бюро пропусков ИКИ РАН для оформления разового пропуска." %}</p>
+      <p>{% blocktranslate with email=policy.email %}Вопросы и отзыв согласия — на {{ email }}.{% endblocktranslate %}</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

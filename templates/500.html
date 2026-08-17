@@ -1,0 +1,32 @@
+{% load i18n %}{% comment %}Без extends: базовый шаблон ходит в БД за настройками
+сайта, а при 500 она может быть как раз недоступна. Переводы брать можно —
+gettext читает каталог из файлов, в базу не ходит.{% endcomment %}
+{% get_current_language as LANGUAGE_CODE %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'ru' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% translate "Ошибка сервера" %} — {% translate "Научный семинар ИКИ РАН" %}</title>
+  <style>
+    body { margin:0; background:#F4F2EC; color:#14171B;
+           font-family: system-ui, -apple-system, sans-serif; line-height:1.55; }
+    .box { max-width:640px; margin:0 auto; padding:15vh 24px 0; }
+    h1 { font-family: Georgia, serif; font-weight:400; font-size:32px; margin:12px 0 0; }
+    .code { font-family: ui-monospace, monospace; font-size:11px; letter-spacing:.2em;
+            text-transform:uppercase; color:#5F6670; }
+    p { color:#4A5058; }
+    a { color:#A63D1E; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <p class="code">500</p>
+    <h1>{% translate "Ошибка на сервере" %}</h1>
+    {% comment %}Адрес зашит: настройки сайта лежат в БД, а она при 500 может
+    быть недоступна — ради этого шаблона в неё не ходим.{% endcomment %}
+    <p>{% blocktranslate with email="seminar@cosmos.ru" %}Мы уже знаем о проблеме. Попробуйте обновить страницу позже
+       или напишите на <a href="mailto:{{ email }}">{{ email }}</a>.{% endblocktranslate %}</p>
+    <p><a href="/">{% translate "На главную" %}</a></p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+[Unit]
+Description=Сайт научного семинара ИКИ РАН
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=iki-seminar
+Group=iki-seminar
+WorkingDirectory=/opt/iki-seminar
+EnvironmentFile=/opt/iki-seminar/.env
+Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+
+# uv приносит собственный Python 3.13 — системный не используется вовсе.
+ExecStartPre=/usr/local/bin/uv sync --locked --no-dev
+ExecStartPre=/usr/local/bin/uv run manage.py migrate --noinput
+ExecStartPre=/usr/local/bin/uv run manage.py collectstatic --noinput
+ExecStart=/usr/local/bin/uv run gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile -
+
+Restart=on-failure
+RestartSec=5s
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/iki-seminar/media /opt/iki-seminar/staticfiles /opt/iki-seminar/.venv
+
+[Install]
+WantedBy=multi-user.target

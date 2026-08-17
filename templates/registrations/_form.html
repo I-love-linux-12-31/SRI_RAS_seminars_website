@@ -1,0 +1,77 @@
+{% load i18n i18n_extras %}
+{# Общий кусок: и содержимое модалки, и тело страницы-фолбэка. #}
+<form class="regform"
+      method="post"
+      action="{% url 'registrations:register' seminar.slug %}"
+      hx-post="{% url 'registrations:register' seminar.slug %}"
+      hx-target="closest [data-reg-slot]"
+      hx-swap="innerHTML">
+  {% csrf_token %}
+
+  <p class="regform__subject">{{ seminar|tr:"title" }}</p>
+
+  {% if form.non_field_errors %}
+    <p class="formerror">{{ form.non_field_errors.0 }}</p>
+  {% endif %}
+
+  {% if form.fields.attendance.choices|length > 1 %}
+    <fieldset class="fmt">
+      <legend class="mono-label">{% translate "Формат участия" %}</legend>
+      <div class="fmt__grid">
+        {% for radio in form.attendance %}
+          <label class="fmt__opt">
+            {{ radio.tag }}
+            <span class="fmt__label">{{ radio.choice_label }}</span>
+            <span class="fmt__note">
+              {% if radio.data.value == 'onsite' %}
+                {% if seminar.pass_required %}{% translate "Нужен пропуск в институт" %}{% else %}{% translate "Вход свободный" %}{% endif %}
+              {% else %}{% translate "Ссылка придёт на почту" %}{% endif %}
+            </span>
+          </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+  {% else %}
+    {{ form.attendance.as_hidden }}
+  {% endif %}
+
+  <div class="fields">
+    {% include "registrations/_field.html" with field=form.full_name required=True %}
+    {% include "registrations/_field.html" with field=form.organization required=True %}
+    <div class="fields__pair">
+      {% include "registrations/_field.html" with field=form.position required=False optional=True %}
+      {% include "registrations/_field.html" with field=form.email required=True %}
+    </div>
+  </div>
+
+  {% if seminar.pass_required %}
+    <div class="passhint" data-onsite-only>
+      <span class="passhint__tag">{% translate "ПРОПУСК" %}</span>
+      <p>
+        {% blocktranslate with deadline=seminar.registration_deadline|date:"j E, H:i" %}ФИО и организация передаются в бюро пропусков. Заявка на пропуск закрывается {{ deadline }}.{% endblocktranslate %}
+      </p>
+    </div>
+  {% endif %}
+
+  <label class="consent {% if form.consent_pd.errors %}consent--error{% endif %}">
+    {{ form.consent_pd }}
+    <span>
+      {% url 'seminars:privacy' as privacy_url %}
+      {% blocktranslate with href=policy_url|default:privacy_url %}Я согласен на <a href="{{ href }}" target="_blank" rel="noopener">обработку персональных данных</a> в целях организации участия в семинаре и оформления пропуска.{% endblocktranslate %}
+    </span>
+  </label>
+  {% if form.consent_pd.errors %}
+    <p class="formerror">{{ form.consent_pd.errors.0 }}</p>
+  {% endif %}
+
+  {# Honeypot: людям не видно и не сфокусировать, боты заполняют. #}
+  <div class="honey" aria-hidden="true">
+    <label>{% translate "Не заполняйте это поле" %}{{ form.website }}</label>
+  </div>
+  {{ form.ts }}
+
+  <div class="regform__actions">
+    <button type="submit" class="btn btn--primary">{% translate "Отправить заявку" %}</button>
+    <button type="button" class="btn" data-close-modal>{% translate "Отмена" %}</button>
+  </div>
+</form>

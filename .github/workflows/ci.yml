@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: iki_seminar
+          POSTGRES_USER: iki
+          POSTGRES_PASSWORD: iki
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      SECRET_KEY: ci-only
+      DATABASE_URL: postgres://iki:iki@localhost:5432/iki_seminar
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Установить uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Синхронизировать зависимости
+        run: uv sync --locked
+
+      - name: Линтер
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Тесты
+        run: uv run pytest -q
+
+      # Ловит битые ссылки в CSS: ManifestStaticFilesStorage падает,
+      # если файл, на который ссылается url(), отсутствует.
+      - name: Сборка статики
+        run: uv run manage.py collectstatic --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod

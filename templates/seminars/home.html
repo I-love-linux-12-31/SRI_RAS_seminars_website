@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+
+{% block nav_action %}
+  {% if upcoming and upcoming.registration_open %}
+    <a class="btn btn--primary btn--sm nav__cta" data-open-register
+       href="{% url 'registrations:register' upcoming.slug %}">{% translate "Записаться" %}</a>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% if upcoming %}
+<section class="wrap section">
+  <div class="chronicle">
+    <div class="chronicle__aside">
+      <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>{% translate "Ближайшее заседание" %}</p>
+      <p class="chronicle__day">{{ upcoming.date|date:"j" }}</p>
+      {# E, а не F: под числом нужен родительный падеж — «сентября», не «Сентябрь». #}
+      <p class="chronicle__month">{{ upcoming.date|date:"E Y" }}</p>
+      <hr class="rule">
+      <dl class="deflist">
+        <dt>{% translate "Время" %}</dt>
+        <dd class="tnum">{{ upcoming.start_time|time:"H:i" }} MSK</dd>
+        <dt>{% translate "Место" %}</dt>
+        <dd>{{ upcoming|tr:"place" }}</dd>
+        <dt>{% translate "Формат" %}</dt>
+        <dd>{{ upcoming.get_seminar_format_display }}</dd>
+      </dl>
+    </div>
+
+    <div class="chronicle__main">
+      <p class="tag">{{ upcoming.topic|tr:"name" }}</p>
+      <h2 class="display"><a class="plain" href="{{ upcoming.get_absolute_url }}">{{ upcoming|tr:"title" }}</a></h2>
+
+      {% for talk in upcoming.talks.all %}
+        {% for speaker in talk.ordered_speakers %}
+          <div class="person">
+            <div class="person__photo">
+              {% if speaker.photo %}<img src="{{ speaker.photo.url }}" alt="">{% endif %}
+            </div>
+            <div>
+              <p class="person__name">{{ speaker|tr:"full_name" }}</p>
+              <p class="person__aff">{{ speaker|tr:"affiliation" }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      {% endfor %}
+
+      {% if upcoming|tr:"abstract" %}
+        <p class="lede">{{ upcoming|tr:"abstract" }}</p>
+      {% endif %}
+
+      <div class="actions">
+        {% if upcoming.registration_open %}
+          <a class="btn btn--primary" data-open-register
+             href="{% url 'registrations:register' upcoming.slug %}">
+            {% if upcoming.pass_required %}{% translate "Записаться и заказать пропуск" %}{% else %}{% translate "Записаться" %}{% endif %}
+          </a>
+        {% else %}
+          <p class="note">{% translate "Приём заявок на это заседание закрыт." %}</p>
+        {% endif %}
+      </div>
+
+      {% if upcoming.registration_open %}
+        <p class="note note--mono">
+          {% blocktranslate with deadline=upcoming.registration_deadline|date:"j E, H:i" %}Заявка на пропуск — до {{ deadline }}{% endblocktranslate %}
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% else %}
+<section class="wrap section">
+  <p class="kicker">{% translate "Ближайшее заседание" %}</p>
+  <p class="lede">{% translate "Дата следующего заседания уточняется. Следите за объявлениями." %}</p>
+</section>
+{% endif %}
+
+<section class="wrap section">
+  <h3 class="section__title">{% translate "Порядок посещения" %}</h3>
+  <div class="cards">
+    <article class="card">
+      <div class="card__head"><span class="card__num">01</span><h4>{% translate "Очно" %}</h4></div>
+      <p>{% translate "Для прохода в институт нужен пропуск. Заполните форму — достаточно ФИО и организации." %}</p>
+    </article>
+    <article class="card">
+      <div class="card__head"><span class="card__num">02</span><h4>{% translate "Онлайн" %}</h4></div>
+      <p>{% translate "Ссылка на видеоконференцию приходит на указанную почту перед началом. Регистрация помогает оценить число участников." %}</p>
+    </article>
+    <article class="card">
+      <div class="card__head"><span class="card__num">03</span><h4>{% translate "Как добраться" %}</h4></div>
+      <p>{{ site|tr:"address" }}. {% translate "Метро «Калужская», 7 минут пешком. Конференц-зал — 2 этаж, корпус А." %}</p>
+    </article>
+  </div>
+</section>
+
+{% if recent %}
+<section class="wrap section section--last">
+  <div class="section__bar">
+    <h3 class="section__title">{% translate "Из архива" %}</h3>
+    <a href="{% url 'seminars:archive' %}">{% translate "Все прошедшие заседания" %} →</a>
+  </div>
+  <ul class="minilist">
+    {% for seminar in recent %}
+      <li>
+        <a class="minilist__link" href="{{ seminar.get_absolute_url }}">
+          <span class="minilist__date">{{ seminar.date|date:"d.m.Y" }}</span>
+          <span>
+            <span class="minilist__title">{{ seminar|tr:"title" }}</span>
+            <span class="minilist__who">{% for talk in seminar.talks.all %}{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% endblock %}

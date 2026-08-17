@@ -1,0 +1,17 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate with name=registration.full_name %}Здравствуйте, {{ name }}!{% endblocktranslate %}
+
+{% translate "Ваша заявка на научный семинар ИКИ РАН принята." %}
+
+{% translate "Тема" %}: {{ seminar.title_ru }}
+{% translate "Дата" %}: {{ seminar.date|date:"j E Y" }}, {{ seminar.start_time|time:"H:i" }} MSK
+{% translate "Место" %}: {{ seminar.place_ru }}
+{% translate "Формат участия" %}: {{ registration.get_attendance_display }}
+{% if registration.needs_pass %}
+{% translate "Пропуск" %}: {% translate "заявка передана в бюро пропусков. При себе иметь документ, удостоверяющий личность." %}
+{% endif %}{% if registration.attendance == 'online' %}
+{% translate "Ссылка на видеоконференцию придёт отдельным письмом перед началом заседания." %}
+{% endif %}
+--
+{% translate "Научный семинар ИКИ РАН" %}
+{{ site_email|default:"seminar@cosmos.ru" }}
+{% endautoescape %}

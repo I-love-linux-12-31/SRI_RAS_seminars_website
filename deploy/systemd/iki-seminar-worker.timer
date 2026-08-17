@@ -1,0 +1,11 @@
+[Unit]
+Description=Запускать разбор очереди уведомлений раз в минуту
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+# Уведомления о заявках не должны копиться, если сервер был выключен.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+
+{% block title %}{% translate "О семинаре" %} — {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="wrap section section--last">
+  <h2 class="page-title">{% translate "О семинаре" %}</h2>
+
+  <div class="about">
+    <div>
+      <p class="mono-label">{% translate "Руководитель" %}</p>
+      <p class="about__name">{{ site|tr:"chair" }}</p>
+      <p class="about__role">{{ site|tr:"chair_title" }}</p>
+
+      <hr class="rule">
+
+      <p class="mono-label">{% translate "Секретарь" %}</p>
+      <p class="about__name">{{ site|tr:"secretary" }}</p>
+      <p class="about__role">{{ site|tr:"secretary_title" }}</p>
+
+      <hr class="rule">
+
+      <p class="mono-label">{% translate "Контакты" %}</p>
+      <p class="about__contact"><a href="mailto:{{ site.email }}">{{ site.email }}</a></p>
+      <p class="about__role">{{ site|tr:"address" }}</p>
+    </div>
+
+    <div>
+      <p class="mono-label">{% translate "Тематика" %}</p>
+      <ol class="topics">
+        {% for t in topics %}
+          <li>
+            <span class="topics__num">{{ forloop.counter|stringformat:"02d" }}</span>
+            <a href="{% url 'seminars:archive' %}?topic={{ t.slug }}">{{ t|tr:"name" }}</a>
+          </li>
+        {% endfor %}
+      </ol>
+    </div>
+
+    <div>
+      <div class="panel">
+        <p class="mono-label">{% translate "Участие" %}</p>
+        <p>{% translate "ИКИ РАН приглашает сотрудников научных организаций для участия в семинаре. Заявки направляйте на адрес семинара или через форму на сайте." %}</p>
+        <hr class="rule rule--soft">
+        <p>{% translate "Для прохода в институт нужен пропуск. Заполните форму — достаточно ФИО и организации." %}</p>
+        <a class="btn btn--primary panel__cta" href="{% url 'seminars:home' %}">{% translate "К ближайшему заседанию" %}</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

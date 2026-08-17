@@ -1,0 +1,9 @@
+{% load i18n %}
+<div class="afield {% if field.errors %}afield--error{% endif %}">
+  <label class="afield__label" for="{{ field.id_for_label }}">
+    {{ field.label }}{% if field.field.required %}<span class="afield__req" aria-hidden="true">*</span>{% endif %}
+  </label>
+  {{ field }}
+  {% if field.help_text %}<p class="afield__hint">{{ field.help_text }}</p>{% endif %}
+  {% if field.errors %}<p class="afield__err">{{ field.errors.0 }}</p>{% endif %}
+</div>

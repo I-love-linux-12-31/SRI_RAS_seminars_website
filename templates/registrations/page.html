@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n i18n_extras %}
+
+{% block title %}{% translate "Регистрация на семинар" %} — {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="wrap section section--last regpage">
+  <a class="back" href="{{ seminar.get_absolute_url }}">← {% translate "К заседанию" %}</a>
+  <p class="mono-label regpage__date">{{ seminar.date|date:"j E Y" }}</p>
+  <h2 class="page-title">{% translate "Регистрация на семинар" %}</h2>
+
+  <div class="regpage__slot" data-reg-slot>
+    {% include "registrations/_form.html" %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,345 @@
+/* Форма записи и модальное окно.
+ *
+ * Мобильность здесь важнее эстетики: поля 16px (иначе iOS зумит страницу),
+ * области нажатия не меньше 44px, на узких экранах диалог прижат к низу —
+ * ближе к большому пальцу.
+ */
+
+/* --- Диалог --------------------------------------------------------------- */
+
+.modal {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: 560px;
+  width: 100%;
+  max-height: 100dvh;
+}
+.modal::backdrop {
+  background: rgba(13, 16, 20, 0.62);
+  backdrop-filter: blur(3px);
+}
+.modal__card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  max-height: 92dvh;
+  animation: rise 0.24s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.modal__head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px clamp(18px, 3vw, 28px) 0;
+}
+.modal__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  line-height: 1.2;
+}
+.modal__close {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--rule);
+  background: var(--surface-raised);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--ink-muted);
+  line-height: 1;
+}
+.modal__close:hover {
+  border-color: var(--ink);
+}
+.modal__body {
+  padding: 18px clamp(18px, 3vw, 28px) clamp(18px, 3vw, 28px);
+  overflow-y: auto;
+}
+
+@media (max-width: 560px) {
+  .modal {
+    max-width: 100%;
+    margin: 0;
+    position: fixed;
+    inset: auto 0 0 0;
+  }
+  .modal__card {
+    border-radius: var(--radius) var(--radius) 0 0;
+    max-height: 94dvh;
+  }
+}
+
+/* --- Форма ---------------------------------------------------------------- */
+
+.regpage {
+  max-width: 640px;
+}
+.regpage__date {
+  margin: 16px 0 6px;
+}
+
+.regform__subject {
+  margin: 0 0 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e2ded4;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.fmt {
+  border: 0;
+  padding: 0;
+  margin: 0 0 20px;
+}
+.fmt legend {
+  padding: 0;
+  margin-bottom: 9px;
+}
+.fmt__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 8px;
+}
+.fmt__opt {
+  position: relative;
+  display: block;
+  padding: 13px 15px;
+  min-height: 60px;
+  cursor: pointer;
+  border-radius: 2px;
+  border: 1px solid var(--border-input);
+  background: var(--surface-raised);
+}
+.fmt__opt input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+/* Обводка вместо галочки: выбранный вариант читается целиком карточкой. */
+.fmt__opt:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.fmt__opt:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.fmt__label {
+  display: block;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+.fmt__note {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 3px;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fields__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 14px;
+}
+
+.field-row {
+  display: block;
+}
+.field-row__label {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.field-row__req {
+  color: var(--accent);
+}
+.field-row__opt {
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-meta);
+}
+.field-row input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  /* 16px — иначе iOS Safari зумит при фокусе. */
+  font-size: 16px;
+  border: 1px solid var(--border-input);
+  background: var(--surface-raised);
+  border-radius: 2px;
+  outline: none;
+}
+.field-row--error input {
+  border-color: var(--accent);
+  background: #fffaf8;
+}
+.field-row__err {
+  display: block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--accent);
+}
+
+.passhint {
+  margin-top: 16px;
+  display: flex;
+  gap: 11px;
+  background: var(--accent-wash);
+  border: 1px solid var(--accent-wash-border);
+  border-radius: 2px;
+  padding: 13px 15px;
+}
+.passhint__tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  padding-top: 2px;
+  white-space: nowrap;
+}
+.passhint p {
+  margin: 0;
+  font-size: 12.5px;
+  color: #5a3529;
+  text-wrap: pretty;
+}
+.passhint[hidden] {
+  display: none;
+}
+
+.consent {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-top: 18px;
+  font-size: 13px;
+  cursor: pointer;
+  text-wrap: pretty;
+}
+.consent input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  accent-color: var(--accent);
+}
+.consent--error {
+  color: var(--accent);
+}
+
+.formerror {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--accent);
+}
+
+/* Honeypot: убран из потока и из последовательности фокуса, но не display:none —
+   часть ботов игнорирует именно скрытые через display поля. */
+.honey {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.regform__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 22px;
+}
+.regform__actions .btn--primary,
+.regform__actions .btn--ghost {
+  flex: 1 1 200px;
+  min-height: 50px;
+}
+
+/* --- Экран «заявка принята» ------------------------------------------------ */
+
+.sent__head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.sent__check {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ok-ink);
+  color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.sent__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 21px;
+  line-height: 1.25;
+}
+.sent__text {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+.sent__summary {
+  margin: 20px 0 0;
+  padding: 16px;
+  background: var(--surface-raised);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 16px;
+  font-size: 13.5px;
+}
+.sent__summary dt {
+  color: var(--ink-meta);
+}
+.sent__summary dd {
+  margin: 0;
+  text-align: right;
+  text-wrap: pretty;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.prose {
+  max-width: 44em;
+  margin-top: 24px;
+}
+.prose ul {
+  padding-left: 1.2em;
+}
+.prose li {
+  margin-bottom: 6px;
+}

@@ -1,0 +1,110 @@
+{% extends "staffpanel/_base_panel.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_new %}{% translate "Новое заседание" %}{% else %}{% translate "Правка заседания" %}{% endif %} — {{ block.super }}{% endblock %}
+
+{% block panel_title %}{% if is_new %}{% translate "Новое заседание" %}{% else %}{% translate "Правка заседания" %}{% endif %}{% endblock %}
+
+{% block panel_actions %}
+  <a class="btn btn--sm" href="{% url 'staffpanel:seminar_list' %}">← {% translate "К списку" %}</a>
+{% endblock %}
+
+{% block panel_tabs %}{% endblock %}
+
+{% block panel_body %}
+<form class="adminform" method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <p class="formerror">{{ form.non_field_errors.0 }}</p>
+  {% endif %}
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Когда и где" %}</legend>
+    <div class="fgrid">
+      {% include "staffpanel/_field.html" with field=form.date %}
+      {% include "staffpanel/_field.html" with field=form.start_time %}
+    </div>
+    {% include "staffpanel/_field.html" with field=form.topic %}
+    {% include "staffpanel/_field.html" with field=form.place_ru %}
+    <div class="fgrid">
+      {% include "staffpanel/_field.html" with field=form.seminar_format %}
+      {% include "staffpanel/_field.html" with field=form.online_url %}
+    </div>
+  </fieldset>
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Тема заседания" %}</legend>
+    {% include "staffpanel/_field.html" with field=form.title_ru %}
+    {% include "staffpanel/_field.html" with field=form.abstract_ru %}
+    <details class="lang-extra">
+      <summary>{% translate "Английская версия (необязательно)" %}</summary>
+      {% include "staffpanel/_field.html" with field=form.title_en %}
+      {% include "staffpanel/_field.html" with field=form.abstract_en %}
+      {% include "staffpanel/_field.html" with field=form.place_en %}
+    </details>
+  </fieldset>
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Доклады" %}</legend>
+    {{ talks.management_form }}
+    <div class="inlines" data-inline-group>
+      {% for talkform in talks %}
+        <div class="inline" data-inline>
+          {{ talkform.id }}
+          {% include "staffpanel/_field.html" with field=talkform.title_ru %}
+          {% include "staffpanel/_field.html" with field=talkform.speakers_raw %}
+          <details class="lang-extra">
+            <summary>{% translate "Ещё" %}</summary>
+            {% include "staffpanel/_field.html" with field=talkform.title_en %}
+            {% include "staffpanel/_field.html" with field=talkform.abstract_ru %}
+          </details>
+          {% if talkform.instance.pk %}
+            <label class="killswitch">{{ talkform.DELETE }} {% translate "Удалить доклад" %}</label>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn--sm" data-add-inline>+ {% translate "Ещё доклад" %}</button>
+  </fieldset>
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Материалы" %}</legend>
+    {{ materials.management_form }}
+    <div class="inlines" data-inline-group>
+      {% for matform in materials %}
+        <div class="inline" data-inline>
+          {{ matform.id }}
+          <div class="fgrid">
+            {% include "staffpanel/_field.html" with field=matform.kind %}
+            {% include "staffpanel/_field.html" with field=matform.title_ru %}
+          </div>
+          {% include "staffpanel/_field.html" with field=matform.file %}
+          {% include "staffpanel/_field.html" with field=matform.url %}
+          {% if matform.non_field_errors %}<p class="formerror">{{ matform.non_field_errors.0 }}</p>{% endif %}
+          {% if matform.instance.pk %}
+            <label class="killswitch">{{ matform.DELETE }} {% translate "Удалить материал" %}</label>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn--sm" data-add-inline>+ {% translate "Ещё материал" %}</button>
+  </fieldset>
+
+  <fieldset class="fset">
+    <legend class="fset__legend">{% translate "Публикация и приём заявок" %}</legend>
+    {% include "staffpanel/_field.html" with field=form.status %}
+    {% include "staffpanel/_field.html" with field=form.registration_closes_at %}
+    {% include "staffpanel/_field.html" with field=form.pass_required %}
+    {% include "staffpanel/_field.html" with field=form.poster %}
+  </fieldset>
+
+  <div class="adminform__actions">
+    <button type="submit" class="btn btn--primary">{% translate "Сохранить" %}</button>
+    <a class="btn" href="{% url 'staffpanel:seminar_list' %}">{% translate "Отмена" %}</a>
+    {% if not is_new %}
+      <a class="btn btn--ghost" href="{{ seminar.get_absolute_url }}" target="_blank" rel="noopener">{% translate "Посмотреть" %}</a>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

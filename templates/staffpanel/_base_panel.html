@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<section class="wrap section section--last">
+  <div class="panelhead">
+    <div>
+      <p class="mono-label panelhead__kicker">{% translate "Панель администратора" %}</p>
+      <h2 class="page-title">{% block panel_title %}{% translate "Управление семинарами" %}{% endblock %}</h2>
+    </div>
+    <div class="panelhead__actions">{% block panel_actions %}{% endblock %}</div>
+  </div>
+
+  {% if messages %}
+    <ul class="flash">
+      {% for message in messages %}
+        <li class="flash__item flash__item--{{ message.tags|default:'info' }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% block panel_tabs %}
+    <nav class="tabs" aria-label="{% translate 'Разделы панели' %}">
+      <a class="tab {% if tab == 'seminars' %}tab--on{% endif %}" href="{% url 'staffpanel:seminar_list' %}">{% translate "Семинары" %}</a>
+      <a class="tab {% if tab == 'registrations' %}tab--on{% endif %}" href="{% url 'staffpanel:registrations' %}">{% translate "Регистрации" %}</a>
+      <a class="tab {% if tab == 'settings' %}tab--on{% endif %}" href="{% url 'staffpanel:settings' %}">{% translate "Настройки" %}</a>
+    </nav>
+  {% endblock %}
+
+  {% block panel_body %}{% endblock %}
+</section>
+{% endblock %}

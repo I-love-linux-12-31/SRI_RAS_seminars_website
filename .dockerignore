@@ -1,0 +1,26 @@
+# Без этого файла COPY . . затягивает в образ хостовое окружение:
+# .venv с dev-зависимостями поверх собранного и .env с секретами.
+
+.venv/
+__pycache__/
+*.py[cod]
+
+.env
+*.sqlite3
+
+/staticfiles/
+/media/
+
+.git/
+.github/
+.idea/
+.vscode/
+.claude/
+
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+*.md
+compose.yml

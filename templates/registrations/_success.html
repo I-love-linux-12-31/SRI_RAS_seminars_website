@@ -1,0 +1,32 @@
+{% load i18n i18n_extras %}
+<div class="sent">
+  <div class="sent__head">
+    <span class="sent__check" aria-hidden="true">✓</span>
+    <div>
+      <p class="sent__title">{% translate "Заявка принята" %}</p>
+      <p class="sent__text">
+        {% if registration.needs_pass %}
+          {% blocktranslate with date=seminar.date|date:"j E" %}Пропуск будет оформлен до {{ date }}. Подтверждение придёт на указанную почту.{% endblocktranslate %}
+        {% elif registration.attendance == 'online' %}
+          {% translate "Ссылка на видеоконференцию придёт на указанную почту перед началом заседания." %}
+        {% else %}
+          {% translate "Подтверждение придёт на указанную почту." %}
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <dl class="sent__summary">
+    <dt>{% translate "ФИО" %}</dt><dd>{{ registration.full_name }}</dd>
+    <dt>{% translate "Организация" %}</dt><dd>{{ registration.organization }}</dd>
+    <dt>{% translate "Формат участия" %}</dt><dd>{{ registration.get_attendance_display }}</dd>
+    <dt>{% translate "Почта" %}</dt><dd class="mono">{{ registration.email }}</dd>
+  </dl>
+
+  <div class="regform__actions">
+    <button type="button" class="btn btn--ghost" data-close-modal>{% translate "Закрыть" %}</button>
+    <a class="btn" href="{% url 'registrations:register' seminar.slug %}"
+       hx-get="{% url 'registrations:register' seminar.slug %}"
+       hx-target="closest [data-reg-slot]" hx-swap="innerHTML">{% translate "Записать ещё одного" %}</a>
+  </div>
+</div>

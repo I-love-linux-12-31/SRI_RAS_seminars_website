@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Вход" %} — {{ block.super }}{% endblock %}
+{% block content %}
+<section class="wrap" style="padding-block: clamp(30px,4.5vw,64px); max-width: 460px">
+  <h2>{% translate "Вход в панель" %}</h2>
+  {% if form.errors %}
+    <p style="color: var(--accent)">{% translate "Неверный логин или пароль." %}</p>
+  {% endif %}
+  <form method="post" style="display:flex;flex-direction:column;gap:14px;margin-top:20px">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit" class="btn btn--primary">{% translate "Войти" %}</button>
+  </form>
+</section>
+{% endblock %}

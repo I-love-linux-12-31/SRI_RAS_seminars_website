@@ -1,0 +1,58 @@
+[project]
+name = "iki-seminar"
+version = "0.1.0"
+description = "Сайт научного семинара ИКИ РАН"
+requires-python = ">=3.13"
+dependencies = [
+    "django==6.1.*",
+    "psycopg[binary]>=3.2",
+    "django-environ>=0.12",
+    "whitenoise>=6.9",
+    "gunicorn>=23.0",
+    "pillow>=11.0",
+    "openpyxl>=3.1",
+    "pytest-django>=4.13.0",
+    "pre-commit>=4.6.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "pytest-cov>=6.0",
+    "factory-boy>=3.3",
+    "ruff>=0.9",
+    "pre-commit>=4.0",
+]
+# Нужны только management-команде импорта старого архива,
+# в проде не устанавливаются.
+legacy-import = [
+    "httpx>=0.28",
+    "beautifulsoup4>=4.13",
+    "lxml>=5.3",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+extend-exclude = ["*/migrations/*", ]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "DJ", "C4", "SIM", "RUF"]
+ignore = [
+    "RUF001",  # кириллица в строках — это норма для этого проекта
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py", "*_test.py"]
+addopts = "--reuse-db --strict-markers"
+
+[tool.coverage.run]
+omit = ["*/migrations/*", "*/tests/*", "config/*"]

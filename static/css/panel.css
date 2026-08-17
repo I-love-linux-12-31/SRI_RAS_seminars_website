@@ -1,0 +1,479 @@
+/* Панель управления.
+ *
+ * Требование ТЗ — заполнять формы с телефона. Поэтому таблицы раскладываются
+ * карточками медиазапросом, а не скриптом: сервер не знает ширину экрана,
+ * и выбор разметки на клиенте давал бы мигание и неверный вариант в SSR.
+ * Подписи для карточного режима берутся из data-label в разметке.
+ */
+
+/* --- Шапка раздела -------------------------------------------------------- */
+
+.panelhead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.panelhead__kicker {
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+.panelhead__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.flash {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flash__item {
+  padding: 11px 15px;
+  border-radius: 2px;
+  font-size: 13.5px;
+  border: 1px solid var(--rule);
+  background: var(--surface-raised);
+}
+.flash__item--success {
+  border-color: var(--ok-border);
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+.flash__item--error {
+  border-color: var(--accent-wash-border);
+  background: var(--accent-wash);
+  color: var(--accent-hover);
+}
+
+/* --- Вкладки -------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--rule);
+  margin-top: clamp(22px, 3vw, 34px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab {
+  font-size: 13.5px;
+  padding: 12px 18px;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  color: #5a6068;
+  border: 1px solid transparent;
+  border-radius: var(--radius) var(--radius) 0 0;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
+.tab:hover {
+  text-decoration: none;
+  color: var(--ink);
+}
+.tab--on {
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--surface-raised);
+  border-color: var(--rule);
+  border-bottom-color: var(--surface-raised);
+}
+
+/* --- Плитки со сводкой ---------------------------------------------------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: clamp(20px, 2.6vw, 30px) 0;
+}
+.stat {
+  background: var(--surface-raised);
+  padding: 16px 18px;
+}
+.stat__label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+}
+.stat__value {
+  margin: 8px 0 0;
+  font-family: var(--font-serif);
+  font-size: 30px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Таблица данных ------------------------------------------------------- */
+
+.table-wrap {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  overflow-x: auto;
+}
+.dtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.dtable th {
+  text-align: left;
+  padding: 12px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+  font-weight: 500;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule-soft);
+  white-space: nowrap;
+}
+.dtable td {
+  padding: 14px 16px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule-softer);
+}
+.dtable tr:last-child td {
+  border-bottom: 0;
+}
+.dtable__date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.dtable__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+.dtable__title {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.3;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.dtable__title:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+.dtable__sub {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-meta);
+  margin-top: 4px;
+}
+.dtable__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.dtable__acts form {
+  margin: 0;
+}
+
+.badge--published {
+  color: var(--ok-ink);
+  border-color: var(--ok-border);
+  background: var(--ok-bg);
+}
+.badge--hidden {
+  color: var(--warn-ink);
+  border-color: var(--warn-border);
+  background: var(--warn-bg);
+}
+.badge--draft {
+  color: var(--ink-muted);
+  border-color: #d5d0c4;
+  background: #f0ede6;
+}
+
+.passform {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.passform select {
+  min-height: 38px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  border-radius: 2px;
+  padding: 0 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Карточки вместо таблицы на узких экранах. */
+@media (max-width: 860px) {
+  .table-wrap {
+    border: 0;
+    background: none;
+    overflow: visible;
+  }
+  .dtable thead {
+    display: none;
+  }
+  .dtable,
+  .dtable tbody,
+  .dtable tr,
+  .dtable td {
+    display: block;
+    width: 100%;
+  }
+  .dtable tr {
+    background: var(--surface-raised);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .dtable td {
+    padding: 6px 0;
+    border-bottom: 0;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .dtable td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-meta);
+  }
+  .dtable td:not([data-label]) {
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top: 1px solid var(--rule-softer);
+  }
+  .dtable__num,
+  .dtable__acts {
+    text-align: left;
+    justify-content: flex-end;
+  }
+  /* Тема занимает несколько строк — прижимать её вправо нечитаемо.
+     Такую ячейку раскладываем сверху вниз: подпись, затем значение. */
+  .dtable td:has(.dtable__title) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .dtable__title,
+  .dtable__sub {
+    text-align: left;
+  }
+}
+
+/* --- Формы панели --------------------------------------------------------- */
+
+.adminform {
+  margin-top: clamp(20px, 2.6vw, 30px);
+  max-width: 780px;
+}
+
+.fset {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  padding: clamp(16px, 2.2vw, 24px);
+  margin: 0 0 18px;
+}
+.fset__legend {
+  padding: 0 8px;
+  margin-left: -8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+}
+.fgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 0 16px;
+}
+
+.afield {
+  margin-bottom: 16px;
+}
+.afield__label {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-meta);
+}
+.afield__req {
+  color: var(--accent);
+  margin-left: 4px;
+}
+.afield input:not([type="checkbox"]),
+.afield select,
+.afield textarea,
+.field {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  /* 16px — иначе iOS Safari зумит страницу при фокусе. */
+  font-size: 16px;
+  border: 1px solid var(--border-input);
+  background: var(--surface);
+  border-radius: 2px;
+  outline: none;
+}
+.afield textarea {
+  min-height: 0;
+  resize: vertical;
+  line-height: 1.5;
+}
+.afield input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+.afield--error input,
+.afield--error select,
+.afield--error textarea {
+  border-color: var(--accent);
+  background: #fffaf8;
+}
+.afield__hint {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-meta);
+  text-wrap: pretty;
+}
+.afield__err {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--accent);
+}
+
+.lang-extra {
+  border-top: 1px solid var(--rule-softer);
+  padding-top: 12px;
+  margin-bottom: 14px;
+}
+.lang-extra summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-muted);
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+}
+.lang-extra[open] summary {
+  margin-bottom: 12px;
+}
+
+.inlines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.inline {
+  border: 1px solid var(--rule-soft);
+  border-radius: 2px;
+  background: var(--surface);
+  padding: 14px 16px;
+}
+.inline .afield:last-child {
+  margin-bottom: 0;
+}
+
+.killswitch {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ink-muted);
+  min-height: var(--tap);
+  cursor: pointer;
+}
+.killswitch input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.adminform__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  position: sticky;
+  bottom: 0;
+  padding: 14px 0;
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
+}
+.adminform__actions .btn {
+  min-height: 50px;
+  flex: 1 1 160px;
+}
+
+/* --- Выгрузка ------------------------------------------------------------- */
+
+.exportbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0 14px;
+}
+.exportbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.notes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 16px;
+  margin-top: clamp(20px, 2.6vw, 30px);
+}
+.note-card {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  gap: 12px;
+}
+.note-card__tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  padding-top: 2px;
+  white-space: nowrap;
+}
+.note-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}

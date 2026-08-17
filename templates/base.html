@@ -1,0 +1,95 @@
+{% load static i18n i18n_extras %}<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'ru' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{% translate "Научный семинар ИКИ РАН" %}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{% translate "Научный семинар Института космических исследований РАН: ближайшее заседание, архив докладов, порядок посещения." %}{% endblock %}">
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/pages.css' %}">
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+  {% if user.is_staff %}<link rel="stylesheet" href="{% static 'css/panel.css' %}">{% endif %}
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<div class="strip">
+  <div class="wrap strip__inner">
+    <span>{% translate "Институт космических исследований Российской академии наук" %}</span>
+    <nav class="lang" aria-label="{% translate 'Язык сайта' %}">
+      <a href="{% switch_language_url 'ru' %}" hreflang="ru"
+         {% if LANGUAGE_CODE == 'ru' %}aria-current="true"{% endif %}>RU</a>
+      <span aria-hidden="true">/</span>
+      <a href="{% switch_language_url 'en' %}" hreflang="en"
+         {% if LANGUAGE_CODE == 'en' %}aria-current="true"{% endif %}>EN</a>
+    </nav>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div class="masthead__kicker">{% translate "Научный семинар · с 1966 года" %}</div>
+    <h1>{% translate "Научный семинар ИКИ РАН" %}</h1>
+    <p class="masthead__sub">{% translate "Заседания проходят раз в месяц: доклады по физике космоса, планетным исследованиям и космическому приборостроению. Участие очное и онлайн, вход по пропуску." %}</p>
+  </div>
+</header>
+
+<nav class="nav" aria-label="{% translate 'Основная навигация' %}">
+  <div class="wrap nav__inner">
+    <div class="nav__links">
+      <a href="{% url 'seminars:home' %}" {% if nav == 'home' %}aria-current="page"{% endif %}>{% translate "Главная" %}</a>
+      <a href="{% url 'seminars:about' %}" {% if nav == 'about' %}aria-current="page"{% endif %}>{% translate "О семинаре" %}</a>
+      <a href="{% url 'seminars:archive' %}" {% if nav == 'archive' %}aria-current="page"{% endif %}>{% translate "Архив" %}</a>
+      {% if user.is_staff %}
+        <a href="{% url 'staffpanel:seminar_list' %}" {% if nav == 'manage' %}aria-current="page"{% endif %}>{% translate "Управление" %}</a>
+      {% endif %}
+    </div>
+    {% block nav_action %}{% endblock %}
+  </div>
+</nav>
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+{% comment %}Диалог записи. Наполняется htmx при открытии; без JS ссылки ведут
+на отдельную страницу формы, и она полностью работоспособна.{% endcomment %}
+<dialog id="reg-dialog" class="modal" aria-labelledby="reg-dialog-title">
+  <div class="modal__card">
+    <div class="modal__head">
+      <p class="modal__title" id="reg-dialog-title">{% translate "Регистрация на семинар" %}</p>
+      <button type="button" class="modal__close" data-close-modal aria-label="{% translate 'Закрыть' %}">✕</button>
+    </div>
+    <div id="regform-slot" class="modal__body" data-reg-slot></div>
+  </div>
+</dialog>
+
+<footer class="footer">
+  <div class="wrap footer__inner">
+    <div>
+      <div class="footer__brand">{% translate "Научный семинар ИКИ РАН" %}</div>
+      <div style="font-size:13px;margin-top:8px">{% translate "Институт космических исследований Российской академии наук" %}</div>
+    </div>
+    <div style="font-size:13px">
+      <div class="footer__label">{% translate "руководитель семинара" %}</div>
+      <div class="footer__value">{{ site|tr:"chair"|default:"—" }}</div>
+      <div class="footer__label" style="margin-top:16px">{% translate "секретарь семинара" %}</div>
+      <div class="footer__value">{{ site|tr:"secretary"|default:"—" }}</div>
+    </div>
+    <div style="font-size:13px">
+      <div class="footer__label">{% translate "контакты" %}</div>
+      <div style="margin-top:6px"><a href="mailto:{{ site.email }}">{{ site.email }}</a></div>
+      <div style="margin-top:6px">{{ site|tr:"address" }}</div>
+      <div style="margin-top:12px"><a href="{% url 'seminars:privacy' %}">{% translate "Обработка персональных данных" %}</a></div>
+    </div>
+  </div>
+</footer>
+
+<script src="{% static 'js/htmx.min.js' %}" defer></script>
+<script src="{% static 'js/modal.js' %}" defer></script>
+{% if user.is_staff %}<script src="{% static 'js/inlines.js' %}" defer></script>{% endif %}
+
+</body>
+</html>

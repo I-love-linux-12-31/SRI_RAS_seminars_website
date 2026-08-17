@@ -1,0 +1,78 @@
+# Работает и в docker compose, и в podman-compose.
+# Локальная разработка: достаточно `docker compose up db`, остальное — на хосте
+# через `uv run manage.py runserver`.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-iki_seminar}
+      POSTGRES_USER: ${POSTGRES_USER:-iki}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-iki}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-iki} -d ${POSTGRES_DB:-iki_seminar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    env_file: .env
+    environment:
+      # Задаём явно: env_file перекрывает ENV образа, поэтому полагаться
+      # на значение из Dockerfile нельзя.
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DATABASE_URL: postgres://${POSTGRES_USER:-iki}:${POSTGRES_PASSWORD:-iki}@db:5432/${POSTGRES_DB:-iki_seminar}
+    volumes:
+      - media:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=3).status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # Разбирает очередь уведомлений. Отдельный процесс, чтобы падение SMTP
+  # не влияло на отдачу страниц.
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    env_file: .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DATABASE_URL: postgres://${POSTGRES_USER:-iki}:${POSTGRES_PASSWORD:-iki}@db:5432/${POSTGRES_DB:-iki_seminar}
+      RUN_MIGRATIONS: "0"
+    command: ["python", "manage.py", "run_task_worker", "--loop", "--interval", "10"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      # :z обязателен на системах с SELinux (RED OS, AltLinux, Fedora) —
+      # без него контейнер не прочитает bind-монтированный файл.
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+      - media:/srv/media:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  media:

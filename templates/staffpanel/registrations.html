@@ -1,0 +1,96 @@
+{% extends "staffpanel/_base_panel.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Регистрации" %} — {{ block.super }}{% endblock %}
+{% block panel_title %}{% translate "Регистрации" %}{% endblock %}
+
+{% block panel_body %}
+  <form class="filters" method="get">
+    <div class="filters__row">
+      <label class="search">
+        <span class="visually-hidden">{% translate "Поиск по заявкам" %}</span>
+        <span class="search__icon" aria-hidden="true">⌕</span>
+        <input type="search" name="q" value="{{ q }}" placeholder="{% translate 'ФИО, организация или почта' %}">
+      </label>
+      <label>
+        <span class="visually-hidden">{% translate "Заседание" %}</span>
+        <select name="seminar">
+          {% for s in seminars %}
+            <option value="{{ s.pk }}" {% if seminar and seminar.pk == s.pk %}selected{% endif %}>
+              {{ s.date|date:"d.m.Y" }} — {{ s.title_ru|truncatechars:60 }}
+            </option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span class="visually-hidden">{% translate "Пропуск" %}</span>
+        <select name="pass">
+          <option value="">{% translate "Любой пропуск" %}</option>
+          {% for value, label in pass_statuses %}
+            <option value="{{ value }}" {% if pass_filter == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit" class="btn btn--sm">{% translate "Показать" %}</button>
+    </div>
+  </form>
+
+  <div class="exportbar">
+    <p class="count">
+      {% blocktranslate count n=registrations|length %}{{ n }} заявка{% plural %}{{ n }} заявок{% endblocktranslate %}
+      {% if seminar %}— {{ seminar.date|date:"d.m.Y" }}{% endif %}
+    </p>
+    <div class="exportbar__actions">
+      <a class="btn btn--sm btn--ghost" href="{% url 'staffpanel:registrations_export' 'xlsx' %}?{{ request.GET.urlencode }}">↓ XLSX</a>
+      <a class="btn btn--sm" href="{% url 'staffpanel:registrations_export' 'csv' %}?{{ request.GET.urlencode }}">↓ CSV</a>
+    </div>
+  </div>
+
+  {% if registrations %}
+    <div class="table-wrap">
+      <table class="dtable">
+        <thead>
+          <tr>
+            <th>{% translate "ФИО" %}</th>
+            <th>{% translate "Организация" %}</th>
+            <th>{% translate "Должность" %}</th>
+            <th>{% translate "Почта" %}</th>
+            <th>{% translate "Формат" %}</th>
+            <th>{% translate "Пропуск" %}</th>
+            <th>{% translate "Заявка" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in registrations %}
+            <tr>
+              <td data-label="{% translate 'ФИО' %}"><strong>{{ r.full_name }}</strong></td>
+              <td data-label="{% translate 'Организация' %}">{{ r.organization }}</td>
+              <td data-label="{% translate 'Должность' %}">{{ r.position|default:"—" }}</td>
+              <td data-label="{% translate 'Почта' %}"><a class="mono" href="mailto:{{ r.email }}">{{ r.email }}</a></td>
+              <td data-label="{% translate 'Формат' %}">
+                <span class="badge {% if r.attendance == 'online' %}badge--ok{% endif %}">{{ r.get_attendance_display }}</span>
+              </td>
+              <td data-label="{% translate 'Пропуск' %}">
+                <form method="post" action="{% url 'staffpanel:pass_status' r.pk %}" class="passform">
+                  {% csrf_token %}
+                  <select name="pass_status" onchange="this.form.submit()" aria-label="{% translate 'Статус пропуска' %}">
+                    {% for value, label in pass_statuses %}
+                      <option value="{{ value }}" {% if r.pass_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                  <noscript><button type="submit" class="btn btn--sm">OK</button></noscript>
+                </form>
+              </td>
+              <td data-label="{% translate 'Заявка' %}" class="dtable__date">{{ r.created_at|date:"d.m H:i" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <p class="empty__title">{% translate "Заявок нет" %}</p>
+      <p>{% translate "Либо на это заседание ещё никто не записался, либо фильтры слишком узкие." %}</p>
+    </div>
+  {% endif %}
+{% endblock %}

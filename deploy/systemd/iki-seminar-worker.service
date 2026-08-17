@@ -1,0 +1,20 @@
+[Unit]
+Description=Разбор очереди уведомлений семинара
+After=network-online.target postgresql.service
+
+[Service]
+Type=oneshot
+User=iki-seminar
+Group=iki-seminar
+WorkingDirectory=/opt/iki-seminar
+EnvironmentFile=/opt/iki-seminar/.env
+Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+
+# Без --loop: разобрал очередь и вышел. Периодичность задаёт таймер.
+ExecStart=/usr/local/bin/uv run manage.py run_task_worker
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/iki-seminar/media

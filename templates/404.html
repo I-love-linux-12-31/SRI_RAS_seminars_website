@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Страница не найдена" %} — {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="wrap section section--last">
+  <p class="mono-label">404</p>
+  <h2 class="page-title">{% translate "Страница не найдена" %}</h2>
+  <p class="lede">{% translate "Возможно, заседание ещё не опубликовано или адрес изменился." %}</p>
+  <div class="actions">
+    <a class="btn btn--primary" href="{% url 'seminars:home' %}">{% translate "На главную" %}</a>
+    <a class="btn" href="{% url 'seminars:archive' %}">{% translate "В архив" %}</a>
+  </div>
+</section>
+{% endblock %}

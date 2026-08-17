@@ -1,0 +1,59 @@
+/* Дизайн-токены из прототипа «Семинар ИКИ РАН».
+ *
+ * Отличие от макета — служебные серые. В прототипе --ink-meta был #858C95
+ * (контраст 3.07:1 к фону) и --ink-faint #A8A093 (2.34:1) при кегле 10–10.5px.
+ * Для основного текста нужно 4.5:1, поэтому оба затемнены, а минимальный
+ * кегль моно-подписей поднят с 10px до 11px. Оттенок сохранён.
+ */
+
+:root {
+  /* Поверхности */
+  --bg: #f4f2ec;
+  --surface: #f7f5f0;
+  --surface-raised: #ffffff;
+  --dark: #0d1014;
+  --dark-soft: #0b0e12;
+
+  /* Текст */
+  --ink: #14171b;
+  --ink-muted: #4a5058;
+  --ink-meta: #5f6670; /* было #858C95 — 3.07:1 */
+  --ink-faint: #6b6558; /* было #A8A093 — 2.34:1 */
+  --ink-on-dark: #f7f5f0;
+  --ink-on-dark-muted: #b9bfc7;
+
+  /* Акцент */
+  --accent: #a63d1e;
+  --accent-hover: #7c2b12;
+  --accent-warm: #c46a45;
+  --accent-light: #d98a64;
+  --accent-wash: #f1e7e2;
+  --accent-wash-border: #e2cfc7;
+
+  /* Линии */
+  --rule: #d9d5cb;
+  --rule-soft: #e8e5dd;
+  --rule-softer: #eeebe3;
+  --border-input: #c9c4b7;
+
+  /* Статусы */
+  --ok-ink: #1f5c4a;
+  --ok-border: #b8cfc6;
+  --ok-bg: #eaf2ee;
+  --warn-ink: #8a5a1a;
+  --warn-border: #e0cfae;
+  --warn-bg: #f6eedf;
+
+  /* Типографика */
+  --font-serif: Spectral, Georgia, "Times New Roman", serif;
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  /* Ритм */
+  --wrap: 1180px;
+  --gutter: clamp(18px, 4vw, 56px);
+  --radius: 3px;
+
+  /* Минимальная область нажатия на мобильных */
+  --tap: 44px;
+}

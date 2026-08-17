@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Заявка принята" %} — {{ block.super }}{% endblock %}
+
+{% block content %}
+<section class="wrap section section--last regpage">
+  <div class="regpage__slot" data-reg-slot>
+    {% include "registrations/_success.html" %}
+  </div>
+  <p class="note"><a href="{{ seminar.get_absolute_url }}">← {% translate "К заседанию" %}</a></p>
+</section>
+{% endblock %}
