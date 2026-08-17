@@ -1,3 +1,14 @@
+# Схема исходного запроса. Если перед этим nginx стоит ещё один (
+# внешний сервер принимает трафик и проксирует сюда), то TLS терминируется
+# там, а сюда запрос приходит по http. Просто взять $scheme нельзя — он всегда
+# будет "http", Django сочтёт запрос незащищённым и отправит редирект на https,
+# внешний сервер приведёт его обратно, и получится петля. Поэтому доверяем
+# заголовку снаружи, а $scheme берём, только когда его нет.
+map $http_x_forwarded_proto $forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
 server {
     listen 80;
     server_name _;
@@ -25,7 +36,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
         proxy_redirect off;
     }
 
