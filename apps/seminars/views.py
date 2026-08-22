@@ -1,8 +1,7 @@
 from django.contrib.postgres.search import SearchQuery, SearchVector
-from django.db.models import Count
 from django.views.generic import DetailView, ListView, TemplateView
 
-from .models import RUSSIAN_SEARCH_CONFIG, Seminar, Topic
+from .models import RUSSIAN_SEARCH_CONFIG, Seminar
 
 ARCHIVE_PAGE_SIZE = 20
 RECENT_ON_HOME = 3
@@ -26,7 +25,6 @@ class AboutView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nav"] = "about"
-        context["topics"] = Topic.objects.all()
         return context
 
 
@@ -50,10 +48,6 @@ class ArchiveView(ListView):
         if year.isdigit():
             queryset = queryset.filter(date__year=int(year))
 
-        topic = self.request.GET.get("topic", "")
-        if topic:
-            queryset = queryset.filter(topic__slug=topic)
-
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -61,12 +55,10 @@ class ArchiveView(ListView):
         context["nav"] = "archive"
         context["q"] = self.request.GET.get("q", "")
         context["year"] = self.request.GET.get("year", "")
-        context["topic"] = self.request.GET.get("topic", "")
-        context["has_filters"] = any([context["q"], context["year"], context["topic"]])
+        context["has_filters"] = any([context["q"], context["year"]])
 
         archive = Seminar.objects.archive()
         context["years"] = [d.year for d in archive.dates("date", "year", order="DESC")]
-        context["topics"] = Topic.objects.annotate(n=Count("seminars")).filter(n__gt=0)
         return context
 
 
@@ -81,11 +73,9 @@ class SeminarDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nav"] = "archive" if self.object.is_past else "home"
+        # Тематики больше нет, и подбирать «похожие» не по чему — рядом идут
+        # просто последние прошедшие заседания.
         context["related"] = (
-            Seminar.objects.with_related()
-            .published()
-            .filter(topic=self.object.topic)
-            .exclude(pk=self.object.pk)
-            .order_by("-date")[:RELATED_ON_DETAIL]
+            Seminar.objects.with_related().archive().exclude(pk=self.object.pk)[:RELATED_ON_DETAIL]
         )
         return context

@@ -21,11 +21,6 @@
   }
 
   function clearValues(node) {
-    // Куски, привязанные к сохранённой записи (фотографии докладчиков),
-    // в пустой строке смысла не имеют.
-    node.querySelectorAll("[data-clone-skip]").forEach(function (el) {
-      el.remove();
-    });
     node.querySelectorAll("input, select, textarea").forEach(function (field) {
       if (field.type === "hidden" && !/-(id|DELETE)$/.test(field.name)) return;
       if (field.type === "checkbox" || field.type === "radio") {

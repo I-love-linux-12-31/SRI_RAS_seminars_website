@@ -8,10 +8,10 @@
 import pytest
 from django.core.management import call_command
 
-from apps.legacy_import.importer import Report, ensure_topic, import_seminar
+from apps.legacy_import.importer import Report, import_seminar
 from apps.legacy_import.models import LegacySeminarLink
 from apps.seminars.models import Material, Seminar, Speaker
-from apps.seminars.tests.factories import make_seminar, make_topic
+from apps.seminars.tests.factories import add_talk, make_seminar
 
 from .test_parser import FIXTURES, parse
 
@@ -20,7 +20,7 @@ pytestmark = pytest.mark.django_db
 
 def run(name: str, **kwargs):
     """Импортировать одну фикстуру. Файлы не качаем — сети в тестах нет."""
-    options = {"topic": ensure_topic("unsorted"), "source": _Source(), "download": False}
+    options = {"source": _Source(), "download": False}
     return import_seminar(parse(name), **(options | kwargs))
 
 
@@ -38,7 +38,6 @@ def test_import_creates_seminar_with_talks_and_speakers():
 
     assert seminar.status == Seminar.Status.PUBLISHED
     assert seminar.talks.count() == 2
-    assert seminar.title_ru == seminar.talks.first().title_ru
     assert Speaker.objects.filter(full_name_ru="Иванов Б.А.").exists()
 
 
@@ -116,13 +115,6 @@ def test_broadcast_password_is_reported_as_dropped():
     assert any("пароль" in warning for warning in report.warnings)
 
 
-def test_imported_seminars_land_in_the_catch_all_topic():
-    """На старом сайте тематики нет — заседания должны быть видны как неразобранные."""
-    seminar = run("seminar_13052026-nestik-t")
-
-    assert seminar.topic.slug == "unsorted"
-
-
 def test_import_fills_search_text_so_archive_search_finds_it():
     seminar = run("seminar_13052026-nestik-t")
     seminar.refresh_from_db()
@@ -139,7 +131,7 @@ def test_import_fills_search_text_so_archive_search_finds_it():
 
 def test_seminar_already_in_the_database_is_not_duplicated():
     parsed = parse("seminar_13052026-nestik-t")
-    make_seminar(parsed.date, title_ru="Заведено руками")
+    make_seminar(parsed.date)
 
     assert run("seminar_13052026-nestik-t") is None
     assert Seminar.objects.count() == 1
@@ -147,7 +139,7 @@ def test_seminar_already_in_the_database_is_not_duplicated():
 
 def test_collision_is_explained_in_the_report():
     parsed = parse("seminar_13052026-nestik-t")
-    make_seminar(parsed.date, title_ru="Заведено руками")
+    add_talk(make_seminar(parsed.date), "Заведено руками", [("Иванов И. И.", "ИКИ РАН")])
     report = Report()
 
     run("seminar_13052026-nestik-t", report=report)
@@ -157,24 +149,23 @@ def test_collision_is_explained_in_the_report():
 
 def test_adopt_by_date_overwrites_the_existing_seminar():
     parsed = parse("seminar_13052026-nestik-t")
-    existing = make_seminar(parsed.date, title_ru="Демонстрационное заседание")
+    existing = make_seminar(parsed.date)
+    add_talk(existing, "Демонстрационный доклад", [("Иванов И. И.", "ИКИ РАН")])
 
     seminar = run("seminar_13052026-nestik-t", adopt_by_date=True)
 
     assert seminar.pk == existing.pk
     assert Seminar.objects.count() == 1
-    assert seminar.title_ru.startswith("Интерес к космическим исследованиям")
+    assert seminar.lead_talk.title_ru.startswith("Интерес к космическим исследованиям")
 
 
-def test_adopted_seminar_keeps_its_topic_and_address():
-    """У демонстрационных данных тематика проставлена — терять её незачем."""
+def test_adopted_seminar_keeps_its_address():
+    """Адрес заведённого заседания менять нельзя — по нему уже ходят ссылки."""
     parsed = parse("seminar_13052026-nestik-t")
-    topic = make_topic(slug="society")
-    existing = make_seminar(parsed.date, topic=topic, title_ru="Демонстрационное заседание")
+    existing = make_seminar(parsed.date)
 
     seminar = run("seminar_13052026-nestik-t", adopt_by_date=True)
 
-    assert seminar.topic_id == topic.pk
     assert seminar.slug == existing.slug
 
 

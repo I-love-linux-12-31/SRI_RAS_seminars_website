@@ -16,7 +16,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
 from apps.legacy_import.client import DEFAULT_BASE_URL, DirectoryClient, FetchError, LegacyClient
-from apps.legacy_import.importer import UNSORTED_TOPIC, Report, ensure_topic, import_seminar
+from apps.legacy_import.importer import Report, import_seminar
 from apps.legacy_import.parser import ParseError, parse_archive_page, parse_seminar_page
 from apps.seminars.models import Seminar
 
@@ -55,11 +55,6 @@ class Command(BaseCommand):
             ),
         )
         parser.add_argument(
-            "--topic",
-            default=UNSORTED_TOPIC["slug"],
-            help="код тематики для импортированных заседаний",
-        )
-        parser.add_argument(
             "--status",
             default=Seminar.Status.PUBLISHED,
             choices=[value for value, _ in Seminar.Status.choices],
@@ -70,11 +65,6 @@ class Command(BaseCommand):
         if options["from_dir"] and options["save_dir"]:
             raise CommandError("--from-dir и --save-dir несовместимы")
 
-        try:
-            topic = ensure_topic(options["topic"])
-        except ValueError as exc:
-            raise CommandError(str(exc)) from exc
-
         source = self._open_source(options)
         report = Report()
         with source:
@@ -84,7 +74,7 @@ class Command(BaseCommand):
             self.stdout.write(f"нашлось заседаний: {len(links)}")
 
             for href in links:
-                self._handle_one(href, source, topic, report, options)
+                self._handle_one(href, source, report, options)
 
         self._print_report(report, dry_run=options["dry_run"])
 
@@ -121,7 +111,7 @@ class Command(BaseCommand):
 
     # --- перенос -------------------------------------------------------------
 
-    def _handle_one(self, href: str, source, topic, report: Report, options) -> None:
+    def _handle_one(self, href: str, source, report: Report, options) -> None:
         url = href if href.startswith("http") else f"{options['base_url']}{href}"
         try:
             html = source.page(href)
@@ -152,7 +142,6 @@ class Command(BaseCommand):
             with transaction.atomic():
                 seminar = import_seminar(
                     parsed,
-                    topic=topic,
                     source=source,
                     status=options["status"],
                     download=not options["no_files"],

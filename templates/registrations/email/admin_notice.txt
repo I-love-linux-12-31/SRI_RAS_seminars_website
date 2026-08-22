@@ -8,6 +8,6 @@
 {% translate "Пропуск" %}: {{ registration.get_pass_status_display }}
 {% translate "Подана" %}: {{ registration.created_at|date:"d.m.Y H:i" }}
 
-{% translate "Заседание" %}: {{ seminar.title_ru }}
+{% translate "Заседание" %}: {{ seminar.label }}
 {% translate "Всего заявок" %}: {{ seminar.registrations.count }}
 {% endautoescape %}

@@ -8,7 +8,7 @@
       hx-swap="innerHTML">
   {% csrf_token %}
 
-  <p class="regform__subject">{{ seminar|tr:"title" }}</p>
+  <p class="regform__subject">{{ seminar.lead_talk|tr:"title" }}</p>
 
   {% if form.non_field_errors %}
     <p class="formerror">{{ form.non_field_errors.0 }}</p>

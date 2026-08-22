@@ -2,8 +2,8 @@
 
 {% translate "Ваша заявка на научный семинар ИКИ РАН принята." %}
 
-{% translate "Тема" %}: {{ seminar.title_ru }}
-{% translate "Дата" %}: {{ seminar.date|date:"j E Y" }}, {{ seminar.start_time|time:"H:i" }} MSK
+{% for talk in seminar.talks.all %}{% translate "Доклад" %}: {{ talk.title_ru }}
+{% endfor %}{% translate "Дата" %}: {{ seminar.date|date:"j E Y" }}, {{ seminar.start_time|time:"H:i" }} MSK
 {% translate "Место" %}: {{ seminar.place_ru }}
 {% translate "Формат участия" %}: {{ registration.get_attendance_display }}
 {% if registration.needs_pass %}

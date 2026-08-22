@@ -27,33 +27,23 @@
         <dt>{% translate "Формат" %}</dt>
         <dd>{{ upcoming.get_seminar_format_display }}</dd>
       </dl>
-
-      {% if upcoming.poster %}
-        <figure class="poster">
-          <a href="{{ upcoming.poster.url }}" target="_blank" rel="noopener">
-            <img src="{{ upcoming.poster.url }}" loading="lazy"
-                 alt="{% translate 'Афиша ближайшего заседания' %}">
-          </a>
-        </figure>
-      {% endif %}
     </div>
 
     <div class="chronicle__main">
-      <p class="tag">{{ upcoming.topic|tr:"name" }}</p>
-      <h2 class="display"><a class="plain" href="{{ upcoming.get_absolute_url }}">{{ upcoming|tr:"title" }}</a></h2>
-
+      {# Собственной темы у заседания нет: заголовками идут сами доклады. #}
       {% for talk in upcoming.talks.all %}
+        <h2 class="display"><a class="plain" href="{{ upcoming.get_absolute_url }}">{{ talk|tr:"title" }}</a></h2>
+
         {% for speaker in talk.ordered_speakers %}
           <div class="person">
-            <div class="person__photo">
-              {% if speaker.photo %}<img src="{{ speaker.photo.url }}" alt="">{% endif %}
-            </div>
-            <div>
-              <p class="person__name">{{ speaker|tr:"full_name" }}</p>
-              <p class="person__aff">{{ speaker|tr:"affiliation" }}</p>
-            </div>
+            <p class="person__name">{{ speaker|tr:"full_name" }}</p>
+            <p class="person__aff">{{ speaker|tr:"affiliation" }}</p>
           </div>
         {% endfor %}
+
+        {% if talk|tr:"abstract" %}
+          <p class="lede">{{ talk|tr:"abstract" }}</p>
+        {% endif %}
       {% endfor %}
 
       {% if upcoming|tr:"abstract" %}
@@ -86,24 +76,6 @@
 </section>
 {% endif %}
 
-<section class="wrap section">
-  <h3 class="section__title">{% translate "Порядок посещения" %}</h3>
-  <div class="cards">
-    <article class="card">
-      <div class="card__head"><span class="card__num">01</span><h4>{% translate "Очно" %}</h4></div>
-      <p>{% translate "Для прохода в институт нужен пропуск. Заполните форму — достаточно ФИО и организации." %}</p>
-    </article>
-    <article class="card">
-      <div class="card__head"><span class="card__num">02</span><h4>{% translate "Онлайн" %}</h4></div>
-      <p>{% translate "Ссылка на видеоконференцию приходит на указанную почту перед началом. Регистрация помогает оценить число участников." %}</p>
-    </article>
-    <article class="card">
-      <div class="card__head"><span class="card__num">03</span><h4>{% translate "Как добраться" %}</h4></div>
-      <p>{{ site|tr:"address" }}. {% translate "Метро «Калужская», 7 минут пешком. Конференц-зал — 2 этаж, корпус А." %}</p>
-    </article>
-  </div>
-</section>
-
 {% if recent %}
 <section class="wrap section section--last">
   <div class="section__bar">
@@ -116,7 +88,7 @@
         <a class="minilist__link" href="{{ seminar.get_absolute_url }}">
           <span class="minilist__date">{{ seminar.date|date:"d.m.Y" }}</span>
           <span>
-            <span class="minilist__title">{{ seminar|tr:"title" }}</span>
+            <span class="minilist__title">{{ seminar.lead_talk|tr:"title" }}</span>
             <span class="minilist__who">{% for talk in seminar.talks.all %}{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
           </span>
         </a>

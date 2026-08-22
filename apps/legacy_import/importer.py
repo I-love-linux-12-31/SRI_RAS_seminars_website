@@ -14,24 +14,11 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils.text import get_valid_filename
 
-from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker, Topic
+from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker
 
 from .client import FetchError
 from .models import LegacySeminarLink
 from .parser import LegacySeminar, LegacySpeaker
-
-# На старом сайте тематики нет вовсе: рубрики появились только в новом макете.
-# Поэтому импорт складывает всё в одну рубрику-накопитель, а секретарь потом
-# разбирает архив по темам руками. Ставить рубрику наугад по ключевым словам
-# было бы хуже: неверная рубрика в фильтре архива незаметна, а пустая — видна.
-UNSORTED_TOPIC = {
-    "slug": "unsorted",
-    "name_ru": "Без тематики",
-    "name_en": "Uncategorised",
-    "short_ru": "Без тематики",
-    "short_en": "Uncategorised",
-    "order": 99,
-}
 
 
 @dataclass
@@ -61,29 +48,16 @@ class Report:
         ]
 
 
-def ensure_topic(slug: str) -> Topic:
-    """Рубрика для импортированных заседаний."""
-    if slug == UNSORTED_TOPIC["slug"]:
-        topic, _ = Topic.objects.get_or_create(
-            slug=slug, defaults={k: v for k, v in UNSORTED_TOPIC.items() if k != "slug"}
-        )
-        return topic
-    try:
-        return Topic.objects.get(slug=slug)
-    except Topic.DoesNotExist as exc:
-        raise ValueError(f"тематика «{slug}» не заведена") from exc
-
-
-def _build_slug(seminar: Seminar) -> str:
+def _build_slug(seminar: Seminar, label: str) -> str:
     """Адрес заседания по общему для проекта правилу.
 
-    Берём генератор из формы панели управления, чтобы импортированные и
-    заведённые руками заседания получали адреса по одному правилу и чтобы
-    правило жило в одном месте.
+    Берём генератор из формы панели управления, чтобы правило жило в одном
+    месте. `label` — тема первого доклада: доклады сохраняются уже после
+    заседания, а адреса перенесённого архива должны остаться прежними.
     """
     from apps.staffpanel.forms import SeminarForm
 
-    return SeminarForm._build_slug(seminar)
+    return SeminarForm._build_slug(seminar, label)
 
 
 def _sync_speaker(parsed: LegacySpeaker, report: Report) -> Speaker:
@@ -138,7 +112,6 @@ def _attach_material(talk: Talk, parsed, source, *, download: bool, report: Repo
 def import_seminar(
     parsed: LegacySeminar,
     *,
-    topic: Topic,
     source,
     status: str = Seminar.Status.PUBLISHED,
     download: bool = True,
@@ -172,7 +145,7 @@ def import_seminar(
                 report.skipped += 1
                 report.warn(
                     parsed.url,
-                    f"на {parsed.date:%d.%m.%Y} уже есть заседание «{clash.title_ru[:40]}» "
+                    f"на {parsed.date:%d.%m.%Y} уже есть заседание «{clash.label[:40]}» "
                     f"({clash.slug}) — пропущено, чтобы не создать двойник; "
                     f"перезаписать: --adopt-by-date",
                 )
@@ -182,19 +155,16 @@ def import_seminar(
     seminar = link.seminar if link is not None else Seminar()
     seminar.date = parsed.date
     seminar.start_time = parsed.start_time
-    seminar.title_ru = parsed.title[:500]
     seminar.place_ru = parsed.place[:300]
     seminar.online_url = parsed.online_url
     seminar.status = status
-    if not seminar.topic_id:
-        seminar.topic = topic
     seminar.seminar_format = (
         Seminar.Format.HYBRID
         if parsed.online_url or "онлайн" in parsed.place.lower()
         else Seminar.Format.ONSITE
     )
     if not seminar.slug:
-        seminar.slug = _build_slug(seminar)
+        seminar.slug = _build_slug(seminar, parsed.title)
     seminar.save()
 
     if link is not None:

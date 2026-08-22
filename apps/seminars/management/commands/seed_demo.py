@@ -9,34 +9,14 @@ from datetime import date, time, timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from django.utils.text import slugify
 
 from apps.core.models import SiteSettings
-from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker, Topic
+from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker
 
-TOPICS = [
-    ("plasma", "Физика космической плазмы", "Space plasma physics", "Плазма", "Plasma"),
-    (
-        "hea",
-        "Астрофизика высоких энергий",
-        "High-energy astrophysics",
-        "Астрофизика",
-        "Astrophysics",
-    ),
-    ("sun", "Солнце и Солнечная система", "Sun and Solar System", "Солнце", "Sun"),
-    ("planets", "Физика планет и атмосфер", "Planetary physics", "Планеты", "Planets"),
-    ("dust", "Малые тела и космическая пыль", "Small bodies and dust", "Пыль", "Dust"),
-    ("astrobio", "Астробиология", "Astrobiology", "Астробиология", "Astrobiology"),
-    ("inter", "Междисциплинарные исследования", "Interdisciplinary", "Междисц.", "Interdisc."),
-    ("society", "Наука и общество", "Science and society", "Общество", "Society"),
-]
-
-# (дата, тематика, тема заседания, [(доклад, [(ФИО, аффилиация)])])
+# (дата, [(доклад, [(ФИО, аффилиация)])])
 SEMINARS = [
     (
         date(2026, 2, 18),
-        "astrobio",
-        "Происхождение и перенос воды во Вселенной",
         [
             (
                 "Происхождение и перенос воды во Вселенной",
@@ -46,8 +26,6 @@ SEMINARS = [
     ),
     (
         date(2026, 1, 14),
-        "astrobio",
-        "Механизм магниторецепции у перелётных птиц: что мы знаем",
         [
             (
                 "Механизм магниторецепции у перелётных птиц: что мы знаем",
@@ -66,8 +44,6 @@ SEMINARS = [
     ),
     (
         date(2025, 11, 19),
-        "inter",
-        "Математическое моделирование иммунной системы и инфекционных заболеваний",
         [
             (
                 "Математическое моделирование иммунной системы и инфекционных заболеваний",
@@ -83,8 +59,6 @@ SEMINARS = [
     ),
     (
         date(2025, 4, 16),
-        "plasma",
-        "Статистика высоких интенсивностей света в турбулентной среде",
         [
             (
                 "Статистика высоких интенсивностей света, распространяющегося в турбулентной среде",
@@ -100,8 +74,6 @@ SEMINARS = [
     ),
     (
         date(2025, 1, 29),
-        "sun",
-        "Корональная сейсмология. Плазменно-пылевая система в атмосфере Марса",
         [
             (
                 "Корональная сейсмология",
@@ -125,8 +97,6 @@ SEMINARS = [
     ),
     (
         date(2024, 11, 20),
-        "hea",
-        "Астрофизические источники нейтрино высоких энергий",
         [
             (
                 "Астрофизические источники нейтрино высоких энергий",
@@ -141,8 +111,6 @@ SEMINARS = [
     ),
     (
         date(2024, 4, 17),
-        "plasma",
-        "50 лет исследований ионосферы",
         [
             (
                 "50 лет исследований ионосферы",
@@ -153,7 +121,6 @@ SEMINARS = [
 ]
 
 UPCOMING = {
-    "topic": "plasma",
     "title_ru": (
         "Турбулентность солнечного ветра на кинетических масштабах: "
         "результаты Solar Orbiter и Parker Solar Probe"
@@ -200,9 +167,8 @@ class Command(BaseCommand):
             Speaker.objects.all().delete()
 
         self._site_settings()
-        topics = self._topics()
-        created = self._archive(topics)
-        created += self._upcoming(topics)
+        created = self._archive()
+        created += self._upcoming()
 
         self.stdout.write(self.style.SUCCESS(f"Создано заседаний: {created}"))
 
@@ -217,40 +183,23 @@ class Command(BaseCommand):
         site.address_en = "84/32 Profsoyuznaya St., Moscow"
         site.save()
 
-    def _topics(self) -> dict[str, Topic]:
-        topics = {}
-        for order, (slug, ru, en, short_ru, short_en) in enumerate(TOPICS):
-            topics[slug], _ = Topic.objects.update_or_create(
-                slug=slug,
-                defaults={
-                    "name_ru": ru,
-                    "name_en": en,
-                    "short_ru": short_ru,
-                    "short_en": short_en,
-                    "order": order,
-                },
-            )
-        return topics
-
     def _speaker(self, name_ru: str, aff_ru: str) -> Speaker:
         speaker, _ = Speaker.objects.get_or_create(
             full_name_ru=name_ru, defaults={"affiliation_ru": aff_ru}
         )
         return speaker
 
-    def _slug(self, when: date, title: str) -> str:
-        return f"{when:%Y-%m-%d}-{slugify(title, allow_unicode=False)[:120] or 'seminar'}"
+    def _slug(self, when: date) -> str:
+        return f"{when:%Y-%m-%d}"
 
-    def _archive(self, topics) -> int:
+    def _archive(self) -> int:
         count = 0
-        for when, topic_slug, title, talks in SEMINARS:
+        for when, talks in SEMINARS:
             seminar, created = Seminar.objects.get_or_create(
-                slug=self._slug(when, title),
+                slug=self._slug(when),
                 defaults={
                     "date": when,
                     "start_time": time(11, 0),
-                    "topic": topics[topic_slug],
-                    "title_ru": title,
                     "place_ru": PLACE_RU,
                     "place_en": PLACE_EN,
                     "status": Seminar.Status.PUBLISHED,
@@ -266,18 +215,19 @@ class Command(BaseCommand):
                     TalkSpeaker.objects.create(
                         talk=talk, speaker=self._speaker(name, aff), order=s_order
                     )
+            # Материалы теперь только ссылками — например, на видеозапись.
             Material.objects.create(
                 seminar=seminar,
-                kind=Material.Kind.ABSTRACT,
-                url=f"https://seminar.cosmos.ru/abstracts/{seminar.slug}.pdf",
+                kind=Material.Kind.VIDEO,
+                url=f"https://seminar.cosmos.ru/video/{seminar.slug}",
             )
             seminar.rebuild_search_text()
         return count
 
-    def _upcoming(self, topics) -> int:
+    def _upcoming(self) -> int:
         # Дата считается от «сегодня», чтобы демо не устаревало.
         when = timezone.localdate() + timedelta(days=21)
-        slug = self._slug(when, UPCOMING["title_ru"])
+        slug = self._slug(when)
         if Seminar.objects.filter(slug=slug).exists():
             return 0
 
@@ -285,9 +235,6 @@ class Command(BaseCommand):
             slug=slug,
             date=when,
             start_time=time(11, 0),
-            topic=topics[UPCOMING["topic"]],
-            title_ru=UPCOMING["title_ru"],
-            title_en=UPCOMING["title_en"],
             abstract_ru=UPCOMING["abstract_ru"],
             abstract_en=UPCOMING["abstract_en"],
             place_ru=PLACE_RU,

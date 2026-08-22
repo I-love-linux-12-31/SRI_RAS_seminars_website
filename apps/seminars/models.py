@@ -6,83 +6,11 @@ from django.contrib.postgres.search import SearchVector
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.text import Truncator, slugify
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.i18n import TranslatedMixin
 
 RUSSIAN_SEARCH_CONFIG = "russian"
-
-# Транслитерация для адресов тематик: slugify() выбрасывает всё нелатинское,
-# и у заведённой из панели «Физики планет» адрес получился бы пустым.
-CYRILLIC_TO_LATIN = str.maketrans(
-    dict(zip("абвгдеёзийклмнопрстуфхцыэ", "abvgdeezijklmnoprstufhcye", strict=True))
-    | {"ж": "zh", "ч": "ch", "ш": "sh", "щ": "shch", "ю": "yu", "я": "ya", "ъ": "", "ь": ""}
-)
-
-
-def slugify_ru(text: str) -> str:
-    """Адрес из русского названия: «Малые тела» → «malye-tela»."""
-    return slugify(text.lower().translate(CYRILLIC_TO_LATIN))
-
-
-class Topic(TranslatedMixin, models.Model):
-    """Тематическая рубрика заседания."""
-
-    SHORT_LIMIT = 40
-
-    slug = models.SlugField(_("код"), max_length=40, unique=True)
-    name_ru = models.CharField(_("название"), max_length=120)
-    name_en = models.CharField(max_length=120, blank=True, default="")
-    # Короткая форма для плашек в архиве, где полное название не помещается.
-    short_ru = models.CharField(_("короткое название"), max_length=SHORT_LIMIT)
-    short_en = models.CharField(max_length=SHORT_LIMIT, blank=True, default="")
-    order = models.PositiveSmallIntegerField(_("порядок"), default=0)
-
-    class Meta:
-        verbose_name = _("тематика")
-        verbose_name_plural = _("тематика")
-        ordering: ClassVar[list[str]] = ["order", "name_ru"]
-
-    def __str__(self):
-        return self.name_ru
-
-    # --- Ввод названием ------------------------------------------------------
-    # В панели тематика вводится текстом с подсказкой, а не выбирается из
-    # списка: отдельного справочника рубрик в интерфейсе нет, и заводить новую
-    # рубрику приходилось бы через код.
-
-    @classmethod
-    def by_name(cls, name: str) -> "Topic | None":
-        """Найти тематику по любому из её названий, без учёта регистра."""
-        return cls.objects.filter(
-            models.Q(name_ru__iexact=name)
-            | models.Q(name_en__iexact=name)
-            | models.Q(short_ru__iexact=name)
-            | models.Q(short_en__iexact=name)
-        ).first()
-
-    @classmethod
-    def create_named(cls, name: str) -> "Topic":
-        """Завести тематику по названию, введённому в панели."""
-        return cls.objects.create(
-            slug=cls._build_slug(name),
-            name_ru=name,
-            short_ru=Truncator(name).chars(cls.SHORT_LIMIT),
-            # В конец списка: у заведённых заранее рубрик порядок расставлен
-            # осмысленно, и новая не должна вклиниваться в его начало.
-            order=(cls.objects.aggregate(last=models.Max("order"))["last"] or 0) + 1,
-        )
-
-    @classmethod
-    def _build_slug(cls, name: str) -> str:
-        # Запас до max_length оставлен под суффикс с номером.
-        base = slugify_ru(name)[:36] or "topic"
-        slug, n = base, 2
-        while cls.objects.filter(slug=slug).exists():
-            slug = f"{base}-{n}"
-            n += 1
-        return slug
 
 
 class Speaker(TranslatedMixin, models.Model):
@@ -94,7 +22,6 @@ class Speaker(TranslatedMixin, models.Model):
         _("должность и организация"), max_length=400, blank=True, default=""
     )
     affiliation_en = models.CharField(max_length=400, blank=True, default="")
-    photo = models.ImageField(_("фото"), upload_to="speakers/", blank=True)
 
     class Meta:
         verbose_name = _("докладчик")
@@ -125,8 +52,8 @@ class SeminarQuerySet(models.QuerySet):
         return self.published()
 
     def with_related(self):
-        """Тематика, доклады и докладчики — минимум для любого списка."""
-        return self.select_related("topic").prefetch_related("talks__speaker_links__speaker")
+        """Доклады и докладчики — минимум для любого списка."""
+        return self.prefetch_related("talks__speaker_links__speaker")
 
     def with_materials(self):
         """Дополнительно материалы. Главной они не нужны — не грузим их зря."""
@@ -149,12 +76,7 @@ class Seminar(TranslatedMixin, models.Model):
     slug = models.SlugField(_("адрес"), max_length=220, unique=True)
     date = models.DateField(_("дата"))
     start_time = models.TimeField(_("время начала"), default=time(11, 0))
-    topic = models.ForeignKey(
-        Topic, verbose_name=_("тематика"), on_delete=models.PROTECT, related_name="seminars"
-    )
 
-    title_ru = models.CharField(_("тема заседания"), max_length=500)
-    title_en = models.CharField(max_length=500, blank=True, default="")
     abstract_ru = models.TextField(_("аннотация"), blank=True, default="")
     abstract_en = models.TextField(blank=True, default="")
 
@@ -182,10 +104,8 @@ class Seminar(TranslatedMixin, models.Model):
         help_text=_("Если не задано, считается по умолчанию из настроек сайта."),
     )
 
-    poster = models.ImageField(_("постер"), upload_to="posters/", blank=True)
-
-    # Денормализованный текст для полнотекстового поиска: тема, аннотация,
-    # доклады и докладчики на обоих языках. Пересобирается в rebuild_search_text().
+    # Денормализованный текст для полнотекстового поиска: аннотация, доклады
+    # и докладчики на обоих языках. Пересобирается в rebuild_search_text().
     search_text = models.TextField(editable=False, blank=True, default="")
 
     created_by = models.ForeignKey(
@@ -211,7 +131,7 @@ class Seminar(TranslatedMixin, models.Model):
         ]
 
     def __str__(self):
-        return f"{self.date:%d.%m.%Y} — {self.title_ru[:60]}"
+        return f"{self.date:%d.%m.%Y} — {self.label[:60]}"
 
     def save(self, *args, **kwargs):
         self.search_text = self.rebuild_search_text(save=False)
@@ -219,6 +139,25 @@ class Seminar(TranslatedMixin, models.Model):
 
     def get_absolute_url(self):
         return reverse("seminars:detail", kwargs={"slug": self.slug})
+
+    # --- Доклады -------------------------------------------------------------
+    # Собственной темы у заседания нет: заседание — это один или несколько
+    # докладов, и в заголовке идёт тема первого. Так же устроен и старый сайт.
+
+    @property
+    def lead_talk(self) -> "Talk | None":
+        """Первый доклад. Через iter(), чтобы не терять prefetch лишним срезом."""
+        return next(iter(self.talks.all()), None)
+
+    @property
+    def other_talks(self) -> list["Talk"]:
+        return list(self.talks.all())[1:]
+
+    @property
+    def label(self) -> str:
+        """Название заседания для служебных мест: списка панели, писем, логов."""
+        talk = self.lead_talk
+        return talk.title_ru if talk else str(_("Заседание без докладов"))
 
     # --- Производные величины ------------------------------------------------
     # Ничего из этого не хранится в базе: «прошло / не прошло» и «регистрация
@@ -266,12 +205,8 @@ class Seminar(TranslatedMixin, models.Model):
 
     def rebuild_search_text(self, *, save: bool = True) -> str:
         parts = [
-            self.title_ru,
-            self.title_en,
             self.abstract_ru,
             self.abstract_en,
-            self.topic.name_ru if self.topic_id else "",
-            self.topic.name_en if self.topic_id else "",
         ]
         if self.pk:
             for talk in self.talks.prefetch_related("speakers"):

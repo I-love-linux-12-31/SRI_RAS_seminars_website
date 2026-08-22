@@ -63,7 +63,7 @@ class SeminarListView(StaffRequiredMixin, TemplateView):
         context["tab"] = "seminars"
 
         seminars = (
-            Seminar.objects.select_related("topic")
+            Seminar.objects.with_related()
             .annotate(registration_count=Count("registrations"))
             .order_by("-date")
         )
@@ -140,7 +140,6 @@ class SeminarEditView(StaffRequiredMixin, View):
                 # промежуточную модель с порядком, обычный save() её не тронет.
                 talk_form = next(f for f in talks.forms if f.instance.pk == talk.pk)
                 talk_form.sync_speakers(talk)
-                talk_form.save_photos()
 
             materials.instance = seminar
             materials.save()
@@ -167,7 +166,6 @@ class SeminarCloneView(StaffRequiredMixin, View):
             clone.status = Seminar.Status.DRAFT
             clone.registration_closes_at = None
             clone.created_by = request.user
-            clone.title_ru = _("Копия: %s") % source.title_ru
             clone.slug = SeminarForm._build_slug(clone)
             clone.save()
 
@@ -243,7 +241,9 @@ class RegistrationListView(StaffRequiredMixin, TemplateView):
         context["tab"] = "registrations"
         context["seminar"] = self.get_seminar()
         context["registrations"] = self.get_queryset()
-        context["seminars"] = Seminar.objects.order_by("-date")[:50]
+        # with_related(): в списке заседание подписано темой первого доклада,
+        # и без предзагрузки выпадающий список стоил бы запроса на строку.
+        context["seminars"] = Seminar.objects.with_related().order_by("-date")[:50]
         context["q"] = self.request.GET.get("q", "")
         context["pass_filter"] = self.request.GET.get("pass", "")
         context["pass_statuses"] = Registration.PassStatus.choices

@@ -338,6 +338,12 @@
   text-transform: uppercase;
   color: var(--ink-meta);
 }
+.fset__hint {
+  margin: 0 0 14px;
+  font-size: 13px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
 .fgrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));

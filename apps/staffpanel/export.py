@@ -39,7 +39,10 @@ def _rows(registrations):
 def _filename(seminar, extension: str) -> str:
     if seminar is None:
         return f"registrations-all.{extension}"
-    return f"registrations-{seminar.date:%Y-%m-%d}-{slugify(seminar.title_ru)[:40]}.{extension}"
+    # Тема первого доклада: собственного заголовка у заседания нет, а по одной
+    # дате в папке выгрузок не разобрать, что за файл.
+    parts = ["registrations", f"{seminar.date:%Y-%m-%d}", slugify(seminar.label)[:40]]
+    return "-".join(part for part in parts if part) + f".{extension}"
 
 
 def registrations_csv(registrations, seminar=None) -> HttpResponse:

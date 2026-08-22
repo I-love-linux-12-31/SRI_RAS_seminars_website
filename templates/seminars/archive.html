@@ -30,13 +30,6 @@
       </label>
       <button type="submit" class="btn btn--sm">{% translate "Найти" %}</button>
     </div>
-
-    <div class="chips">
-      <button type="submit" name="topic" value="" class="chip {% if not topic %}chip--on{% endif %}">{% translate "Вся тематика" %}</button>
-      {% for t in topics %}
-        <button type="submit" name="topic" value="{{ t.slug }}" class="chip {% if topic == t.slug %}chip--on{% endif %}">{{ t|tr:"name" }}</button>
-      {% endfor %}
-    </div>
   </form>
 
   {% if seminars %}
@@ -45,24 +38,18 @@
         <article class="row">
           <div class="row__meta">
             <p class="row__date">{{ seminar.date|date:"d.m.Y" }}</p>
-            <p class="row__topic">{{ seminar.topic|tr:"short" }}</p>
           </div>
           <div class="row__body">
-            <h3 class="row__title"><a class="plain" href="{{ seminar.get_absolute_url }}">{{ seminar|tr:"title" }}</a></h3>
+            <h3 class="row__title"><a class="plain" href="{{ seminar.get_absolute_url }}">{{ seminar.lead_talk|tr:"title" }}</a></h3>
             <p class="row__who">{% for talk in seminar.talks.all %}{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}</p>
-            {% if seminar.talks.all|length > 1 %}
-              <p class="row__extra">{% blocktranslate with title=seminar.talks.all.1|tr:"title" %}+ ещё доклад: {{ title }}{% endblocktranslate %}</p>
-            {% endif %}
+            {% for talk in seminar.other_talks %}
+              <p class="row__extra">{% blocktranslate with title=talk|tr:"title" %}+ ещё доклад: {{ title }}{% endblocktranslate %}</p>
+            {% endfor %}
           </div>
           <div class="row__side">
             {% if seminar.seminar_format == 'online' %}
               <span class="badge badge--ok">{% translate "Онлайн" %}</span>
             {% endif %}
-            {% for m in seminar.materials.all %}
-              {% if m.kind == 'abstract' %}
-                <a class="filelink" href="{{ m.href }}"><span class="filelink__ext">PDF</span>{% translate "Аннотация" %}</a>
-              {% endif %}
-            {% endfor %}
           </div>
         </article>
       {% endfor %}
@@ -71,11 +58,11 @@
     {% if page_obj.has_other_pages %}
       <nav class="pager" aria-label="{% translate 'Страницы архива' %}">
         {% if page_obj.has_previous %}
-          <a class="btn btn--sm" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if year %}year={{ year }}&{% endif %}{% if topic %}topic={{ topic }}&{% endif %}page={{ page_obj.previous_page_number }}">← {% translate "Назад" %}</a>
+          <a class="btn btn--sm" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if year %}year={{ year }}&{% endif %}page={{ page_obj.previous_page_number }}">← {% translate "Назад" %}</a>
         {% endif %}
         <span class="pager__pos">{% blocktranslate with n=page_obj.number total=paginator.num_pages %}Страница {{ n }} из {{ total }}{% endblocktranslate %}</span>
         {% if page_obj.has_next %}
-          <a class="btn btn--sm" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if year %}year={{ year }}&{% endif %}{% if topic %}topic={{ topic }}&{% endif %}page={{ page_obj.next_page_number }}">{% translate "Далее" %} →</a>
+          <a class="btn btn--sm" href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if year %}year={{ year }}&{% endif %}page={{ page_obj.next_page_number }}">{% translate "Далее" %} →</a>
         {% endif %}
       </nav>
     {% endif %}

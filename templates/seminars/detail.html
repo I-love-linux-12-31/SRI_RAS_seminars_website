@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load i18n i18n_extras %}
 
-{% block title %}{{ seminar|tr:"title"|truncatechars:80 }} — {{ block.super }}{% endblock %}
-{# Откат на тему, а не на str(seminar): у него отладочный вид и он всегда русский. #}
-{% block description %}{% firstof seminar|tr:"abstract" seminar|tr:"title" as summary %}{{ summary|truncatechars:180 }}{% endblock %}
+{% block title %}{% firstof seminar.lead_talk|tr:"title" seminar.date|date:"j E Y" as heading %}{{ heading|truncatechars:80 }} — {{ block.super }}{% endblock %}
+{# Откат на тему первого доклада: собственного заголовка у заседания нет. #}
+{% block description %}{% firstof seminar|tr:"abstract" seminar.lead_talk|tr:"title" as summary %}{{ summary|truncatechars:180 }}{% endblock %}
 
 {% block content %}
 <section class="wrap section section--last">
@@ -15,17 +15,11 @@
 
   <div class="detail">
     <div class="detail__main">
-      <p class="crumbs">
-        <span class="crumbs__date">{{ seminar.date|date:"d.m.Y" }}</span>
-        <span aria-hidden="true">·</span>
-        <span>{{ seminar.topic|tr:"name" }}</span>
-        {% if seminar.is_past %}
-          <span aria-hidden="true">·</span>
-          <span class="crumbs__past">{% translate "заседание прошло" %}</span>
-        {% endif %}
-      </p>
+      {% if seminar.is_past %}
+        <p class="crumbs"><span class="crumbs__past">{% translate "заседание прошло" %}</span></p>
+      {% endif %}
 
-      <h2 class="page-title">{{ seminar|tr:"title" }}</h2>
+      <h2 class="page-title">{% blocktranslate with day=seminar.date|date:"j E Y" %}Заседание {{ day }}{% endblocktranslate %}</h2>
 
       {% if seminar|tr:"abstract" %}
         <p class="lede">{{ seminar|tr:"abstract" }}</p>
@@ -37,13 +31,8 @@
             <div class="talk__people">
               {% for speaker in talk.ordered_speakers %}
                 <div class="person">
-                  <div class="person__photo">
-                    {% if speaker.photo %}<img src="{{ speaker.photo.url }}" alt="">{% endif %}
-                  </div>
-                  <div>
-                    <p class="person__name">{{ speaker|tr:"full_name" }}</p>
-                    <p class="person__aff">{{ speaker|tr:"affiliation" }}</p>
-                  </div>
+                  <p class="person__name">{{ speaker|tr:"full_name" }}</p>
+                  <p class="person__aff">{{ speaker|tr:"affiliation" }}</p>
                 </div>
               {% endfor %}
             </div>
@@ -52,7 +41,7 @@
               <h3 class="talk__title">{{ talk|tr:"title" }}</h3>
               {% if talk|tr:"abstract" %}<p class="talk__abstract">{{ talk|tr:"abstract" }}</p>{% endif %}
               {% for m in talk.materials.all %}
-                <a class="filelink" href="{{ m.href }}"><span class="filelink__ext">PDF</span>{{ m.get_kind_display }}</a>
+                <a class="filelink" href="{{ m.href }}">{{ m.get_kind_display }}</a>
               {% endfor %}
             </div>
           </article>
@@ -85,16 +74,6 @@
         {% endif %}
       </div>
 
-      {% if seminar.poster %}
-        <figure class="poster">
-          <a href="{{ seminar.poster.url }}" target="_blank" rel="noopener">
-            <img src="{{ seminar.poster.url }}" loading="lazy"
-                 alt="{% translate 'Афиша заседания' %}">
-          </a>
-          <figcaption class="poster__cap">{% translate "Афиша — открыть в полном размере" %}</figcaption>
-        </figure>
-      {% endif %}
-
       {% if seminar.materials.all %}
         <div class="panel">
           <p class="mono-label">{% translate "Материалы" %}</p>
@@ -108,13 +87,13 @@
 
       {% if related %}
         <div class="panel panel--plain">
-          <p class="mono-label">{% translate "По той же тематике" %}</p>
+          <p class="mono-label">{% translate "Другие заседания" %}</p>
           <ul class="minilist minilist--compact">
             {% for r in related %}
               <li>
                 <a class="minilist__link" href="{{ r.get_absolute_url }}">
                   <span class="minilist__date">{{ r.date|date:"d.m.Y" }}</span>
-                  <span class="minilist__title">{{ r|tr:"title" }}</span>
+                  <span class="minilist__title">{{ r.lead_talk|tr:"title" }}</span>
                 </a>
               </li>
             {% endfor %}

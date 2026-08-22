@@ -26,7 +26,7 @@
         <thead>
           <tr>
             <th>{% translate "Дата" %}</th>
-            <th>{% translate "Тема и докладчик" %}</th>
+            <th>{% translate "Доклад и докладчик" %}</th>
             <th>{% translate "Статус" %}</th>
             <th class="dtable__num">{% translate "Заявок" %}</th>
             <th><span class="visually-hidden">{% translate "Действия" %}</span></th>
@@ -36,9 +36,9 @@
           {% for s in seminars %}
             <tr>
               <td data-label="{% translate 'Дата' %}" class="dtable__date">{{ s.date|date:"d.m.Y" }}</td>
-              <td data-label="{% translate 'Тема' %}">
-                <a class="dtable__title" href="{% url 'staffpanel:seminar_edit' s.pk %}">{{ s.title_ru }}</a>
-                <span class="dtable__sub">{{ s.topic.name_ru }}</span>
+              <td data-label="{% translate 'Доклад' %}">
+                <a class="dtable__title" href="{% url 'staffpanel:seminar_edit' s.pk %}">{{ s.label }}</a>
+                <span class="dtable__sub">{% for talk in s.talks.all %}{% for speaker in talk.ordered_speakers %}{{ speaker.full_name_ru }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
               </td>
               <td data-label="{% translate 'Статус' %}">
                 <span class="badge badge--{{ s.status }}">{{ s.get_status_display }}</span>

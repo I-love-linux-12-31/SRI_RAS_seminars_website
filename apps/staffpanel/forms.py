@@ -9,17 +9,14 @@
 from typing import ClassVar
 
 from django import forms
-from django.core.files.uploadedfile import UploadedFile
 from django.forms import BaseFormSet, inlineformset_factory
-from django.utils.html import format_html, format_html_join
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import SiteSettings
-from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker, Topic
+from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker
 
 SPEAKER_SEPARATOR = "—"
-PHOTO_PREFIX = "photo_"
 
 
 class IsoValueMixin:
@@ -58,30 +55,6 @@ class DateTimeLocalInput(IsoValueMixin, forms.DateTimeInput):
     iso_format = "%Y-%m-%dT%H:%M"
 
 
-class DatalistInput(forms.TextInput):
-    """Свободный ввод с подсказкой уже заведённых значений.
-
-    Нативный <datalist> вместо скрипта-автодополнения: браузер сам фильтрует
-    подсказки по набранному, это работает с телефонной клавиатуры и без
-    JavaScript, а новое значение вводится тем же полем.
-    """
-
-    def __init__(self, list_id: str, attrs=None):
-        # autocomplete off — иначе поверх подсказок браузер покажет ещё и
-        # собственную историю ввода, и список задваивается.
-        super().__init__({"list": list_id, "autocomplete": "off"} | (attrs or {}))
-        self.list_id = list_id
-        self.options: list[str] = []
-
-    def render(self, name, value, attrs=None, renderer=None):
-        return format_html(
-            '{}<datalist id="{}">{}</datalist>',
-            super().render(name, value, attrs, renderer),
-            self.list_id,
-            format_html_join("", '<option value="{}"></option>', ((o,) for o in self.options)),
-        )
-
-
 def error_summary(*parts: forms.BaseForm | BaseFormSet) -> list[str]:
     """Ошибки формы и вложенных формсетов одним списком — для сводки сверху.
 
@@ -107,26 +80,11 @@ def error_summary(*parts: forms.BaseForm | BaseFormSet) -> list[str]:
 
 
 class SeminarForm(forms.ModelForm):
-    # Не в Meta.fields, а отдельным полем: в базе это связь, а в панели —
-    # строка. Тематика подставляется в заседание уже в save(), когда форма
-    # целиком прошла проверку, — иначе опечатка в соседнем поле оставляла бы
-    # в справочнике только что заведённую рубрику.
-    topic = forms.CharField(
-        label=_("тематика"),
-        max_length=Topic._meta.get_field("name_ru").max_length,
-        help_text=_(
-            "Выберите из списка или впишите новую — она будет заведена. "
-            "Тематика, у которой не осталось заседаний, удаляется сама."
-        ),
-    )
-
     class Meta:
         model = Seminar
         fields: ClassVar[list[str]] = [
             "date",
             "start_time",
-            "title_ru",
-            "title_en",
             "abstract_ru",
             "abstract_en",
             "place_ru",
@@ -136,38 +94,23 @@ class SeminarForm(forms.ModelForm):
             "pass_required",
             "registration_closes_at",
             "status",
-            "poster",
         ]
         widgets: ClassVar[dict] = {
             "date": DateInput(),
             "start_time": TimeInput(),
             "registration_closes_at": DateTimeLocalInput(),
-            "title_ru": forms.Textarea(attrs={"rows": 2}),
-            "title_en": forms.Textarea(attrs={"rows": 2}),
             "abstract_ru": forms.Textarea(attrs={"rows": 5}),
             "abstract_en": forms.Textarea(attrs={"rows": 5}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["title_en"].required = False
         self.fields["place_ru"].required = False
-
-        widget = DatalistInput("topic-options")
-        # Подсказки на языке панели: Topic.__str__ всегда отдаёт name_ru, и на
-        # английской панели список тематик оставался бы русским.
-        widget.options = [topic.tr("name") for topic in Topic.objects.all()]
-        self.fields["topic"].widget = widget
-        if self.instance.topic_id:
-            self.initial["topic"] = self.instance.topic.tr("name")
 
         for field in self.fields.values():
             if isinstance(field.widget, forms.CheckboxInput):
                 continue
             field.widget.attrs.setdefault("class", "field")
-
-    def clean_topic(self) -> str:
-        return " ".join(self.cleaned_data["topic"].split())
 
     def clean(self):
         cleaned = super().clean()
@@ -179,31 +122,24 @@ class SeminarForm(forms.ModelForm):
 
     def save(self, commit=True):
         seminar = super().save(commit=False)
-        previous_topic_id = seminar.topic_id
-        seminar.topic = Topic.by_name(self.cleaned_data["topic"]) or Topic.create_named(
-            self.cleaned_data["topic"]
-        )
         if not seminar.slug:
             seminar.slug = self._build_slug(seminar)
         if commit:
             seminar.save()
-            if previous_topic_id and previous_topic_id != seminar.topic_id:
-                self._forget_unused_topic(previous_topic_id)
         return seminar
 
     @staticmethod
-    def _forget_unused_topic(topic_id: int) -> None:
-        """Убрать тематику, у которой после правки не осталось заседаний.
+    def _build_slug(seminar: Seminar, label: str = "") -> str:
+        """Адрес заседания.
 
-        Справочника рубрик в панели нет, и опечатка в названии заводит новую
-        тематику. Без уборки исправленный вариант остался бы в подсказках
-        навсегда, а удалить его было бы нечем.
+        Собственной темы у заседания больше нет, а доклады сохраняются уже
+        после него — поэтому из панели адрес получается по одной дате.
+        Импорт архива передаёт `label` (тему первого доклада) и оставляет
+        старые адреса такими же, какими они были на прошлом сайте.
         """
-        Topic.objects.filter(pk=topic_id, seminars__isnull=True).delete()
-
-    @staticmethod
-    def _build_slug(seminar: Seminar) -> str:
-        base = f"{seminar.date:%Y-%m-%d}-{slugify(seminar.title_ru)[:120] or 'seminar'}"
+        base = f"{seminar.date:%Y-%m-%d}"
+        if label:
+            base = f"{base}-{slugify(label)[:120]}".rstrip("-")
         slug, n = base, 2
         while Seminar.objects.filter(slug=slug).exclude(pk=seminar.pk).exists():
             slug = f"{base}-{n}"
@@ -241,26 +177,6 @@ class TalkForm(forms.ModelForm):
         self.fields["title_en"].required = False
         if self.instance.pk:
             self.fields["speakers_raw"].initial = self._dump_speakers(self.instance)
-            self._add_photo_fields()
-
-    def _add_photo_fields(self) -> None:
-        """По полю на каждого уже сохранённого докладчика.
-
-        Привязать фотографию к строке текста нельзя: пока доклад не сохранён,
-        докладчика ещё нет. Поэтому поля появляются после сохранения — по
-        одному на имя, чтобы не гадать, чьё это фото.
-        """
-        for speaker in self.instance.ordered_speakers:
-            self.fields[f"{PHOTO_PREFIX}{speaker.pk}"] = forms.ImageField(
-                label=_("Фото: %s") % speaker.full_name_ru,
-                required=False,
-                initial=speaker.photo,
-                help_text=_("Хранится у докладчика — появится на всех его заседаниях."),
-            )
-
-    @property
-    def photo_fields(self) -> list[forms.BoundField]:
-        return [self[name] for name in self.fields if name.startswith(PHOTO_PREFIX)]
 
     @staticmethod
     def _dump_speakers(talk: Talk) -> str:
@@ -311,41 +227,32 @@ class TalkForm(forms.ModelForm):
                 speaker.save(update_fields=["affiliation_ru"])
             TalkSpeaker.objects.create(talk=talk, speaker=speaker, order=order)
 
-    def save_photos(self) -> None:
-        """Разложить загруженные фотографии по докладчикам.
-
-        Нетронутое поле отдаёт прежний файл, и переписывать его нельзя —
-        снимок с диска исчез бы. Значение False ставит галочка «очистить».
-        """
-        for name, value in self.cleaned_data.items():
-            if not name.startswith(PHOTO_PREFIX):
-                continue
-            if value is not False and not isinstance(value, UploadedFile):
-                continue
-            speaker = Speaker.objects.filter(pk=name.removeprefix(PHOTO_PREFIX)).first()
-            if speaker is None:
-                continue
-            # Прежний файл иначе остаётся в media/ навсегда: имя в базе
-            # сменится, а сам снимок никто не удалит.
-            speaker.photo.delete(save=False)
-            speaker.photo = value or ""
-            speaker.save(update_fields=["photo"])
-
 
 class MaterialForm(forms.ModelForm):
+    """Материал заседания — только ссылкой.
+
+    Прикреплять файлы из панели нельзя: это лишняя работа для секретаря, а
+    аннотация теперь набирается текстом прямо в докладе. Поле `file` в модели
+    осталось ради архива, перенесённого со старого сайта.
+    """
+
     class Meta:
         model = Material
-        fields: ClassVar[list[str]] = ["kind", "title_ru", "file", "url"]
+        fields: ClassVar[list[str]] = ["kind", "title_ru", "url"]
         widgets: ClassVar[dict] = {
             "title_ru": forms.TextInput(attrs={"class": "field"}),
             "url": forms.URLInput(attrs={"class": "field"}),
         }
 
-    def clean(self):
-        cleaned = super().clean()
-        if not cleaned.get("file") and not cleaned.get("url"):
-            raise forms.ValidationError(_("Приложите файл или укажите ссылку."))
-        return cleaned
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Материал без ссылки — пустая строка в интерфейсе. Пустые добавочные
+        # строки формсет и так не проверяет, так что заполнять их не обяжет.
+        #
+        # Кроме перенесённого архива: там вместо ссылки лежит скачанный файл.
+        # Требуй мы ссылку и от него — заседание со старого сайта перестало бы
+        # сохраняться, пока секретарь не придумает, что вписать.
+        self.fields["url"].required = not self.instance.file
 
 
 TalkFormSet = inlineformset_factory(

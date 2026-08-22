@@ -18,7 +18,6 @@ SECRETARY_PERMS = [
     ("seminars", "talkspeaker", ["add", "change", "delete", "view"]),
     ("seminars", "speaker", ["add", "change", "view"]),
     ("seminars", "material", ["add", "change", "delete", "view"]),
-    ("seminars", "topic", ["view"]),
     ("registrations", "registration", ["change", "view"]),
 ]
 
@@ -26,7 +25,6 @@ SECRETARY_PERMS = [
 CHAIR_EXTRA = [
     ("seminars", "seminar", ["delete"]),
     ("seminars", "speaker", ["delete"]),
-    ("seminars", "topic", ["add", "change", "delete"]),
     ("registrations", "registration", ["delete"]),
     ("core", "sitesettings", ["change", "view"]),
 ]

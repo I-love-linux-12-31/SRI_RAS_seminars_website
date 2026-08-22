@@ -23,7 +23,6 @@
       {% include "staffpanel/_field.html" with field=form.date %}
       {% include "staffpanel/_field.html" with field=form.start_time %}
     </div>
-    {% include "staffpanel/_field.html" with field=form.topic %}
     {% include "staffpanel/_field.html" with field=form.place_ru %}
     <div class="fgrid">
       {% include "staffpanel/_field.html" with field=form.seminar_format %}
@@ -32,12 +31,10 @@
   </fieldset>
 
   <fieldset class="fset">
-    <legend class="fset__legend">{% translate "Тема заседания" %}</legend>
-    {% include "staffpanel/_field.html" with field=form.title_ru %}
+    <legend class="fset__legend">{% translate "Аннотация заседания" %}</legend>
     {% include "staffpanel/_field.html" with field=form.abstract_ru %}
     <details class="lang-extra">
       <summary>{% translate "Английская версия (необязательно)" %}</summary>
-      {% include "staffpanel/_field.html" with field=form.title_en %}
       {% include "staffpanel/_field.html" with field=form.abstract_en %}
       {% include "staffpanel/_field.html" with field=form.place_en %}
     </details>
@@ -52,13 +49,6 @@
           {{ talkform.id }}
           {% include "staffpanel/_field.html" with field=talkform.title_ru %}
           {% include "staffpanel/_field.html" with field=talkform.speakers_raw %}
-          {% comment %}Поля фотографий привязаны к конкретным докладчикам —
-          в клоне пустой строки им делать нечего.{% endcomment %}
-          <div data-clone-skip>
-            {% for photo in talkform.photo_fields %}
-              {% include "staffpanel/_field.html" with field=photo %}
-            {% endfor %}
-          </div>
           <details class="lang-extra">
             <summary>{% translate "Ещё" %}</summary>
             {% include "staffpanel/_field.html" with field=talkform.title_en %}
@@ -75,6 +65,7 @@
 
   <fieldset class="fset">
     <legend class="fset__legend">{% translate "Материалы" %}</legend>
+    <p class="fset__hint">{% translate "Только ссылками: видеозапись, презентация. Файлы прикреплять не нужно — аннотация набирается текстом в докладе." %}</p>
     {{ materials.management_form }}
     <div class="inlines" data-inline-group>
       {% for matform in materials %}
@@ -84,8 +75,15 @@
             {% include "staffpanel/_field.html" with field=matform.kind %}
             {% include "staffpanel/_field.html" with field=matform.title_ru %}
           </div>
-          {% include "staffpanel/_field.html" with field=matform.file %}
           {% include "staffpanel/_field.html" with field=matform.url %}
+          {% if matform.instance.file %}
+            {% comment %}Файл перенесён со старого сайта: заменить его из панели
+            нельзя, но знать, что он есть, секретарю нужно.{% endcomment %}
+            <p class="fset__hint">
+              {% translate "Файл из архива:" %}
+              <a href="{{ matform.instance.file.url }}" target="_blank" rel="noopener">{{ matform.instance.file.name }}</a>
+            </p>
+          {% endif %}
           {% if matform.non_field_errors %}<p class="formerror">{{ matform.non_field_errors.0 }}</p>{% endif %}
           {% if matform.instance.pk %}
             <label class="killswitch">{{ matform.DELETE }} {% translate "Удалить материал" %}</label>
@@ -101,7 +99,6 @@
     {% include "staffpanel/_field.html" with field=form.status %}
     {% include "staffpanel/_field.html" with field=form.registration_closes_at %}
     {% include "staffpanel/_field.html" with field=form.pass_required %}
-    {% include "staffpanel/_field.html" with field=form.poster %}
   </fieldset>
 
   <div class="adminform__actions">

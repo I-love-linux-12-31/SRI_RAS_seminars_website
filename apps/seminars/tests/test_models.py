@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from apps.seminars.models import Seminar
 
-from .factories import add_talk, make_seminar, make_topic
+from .factories import add_talk, make_seminar
 
 pytestmark = pytest.mark.django_db
 
@@ -34,9 +34,8 @@ def test_yesterday_moves_to_archive_without_any_job():
 
 
 def test_draft_and_hidden_are_not_public():
-    topic = make_topic()
-    make_seminar(timezone.localdate(), topic=topic, suffix="d", status=Seminar.Status.DRAFT)
-    make_seminar(timezone.localdate(), topic=topic, suffix="h", status=Seminar.Status.HIDDEN)
+    make_seminar(timezone.localdate(), suffix="d", status=Seminar.Status.DRAFT)
+    make_seminar(timezone.localdate(), suffix="h", status=Seminar.Status.HIDDEN)
 
     assert Seminar.objects.published().count() == 0
     assert Seminar.objects.upcoming().count() == 0

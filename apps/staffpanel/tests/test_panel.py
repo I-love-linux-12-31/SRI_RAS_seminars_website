@@ -1,29 +1,17 @@
 """Проверки панели управления."""
 
 from datetime import datetime, time, timedelta
-from io import BytesIO
 
 import pytest
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.registrations.models import Registration
-from apps.seminars.models import Seminar, Speaker, Topic
-from apps.seminars.tests.factories import add_talk, make_seminar, make_topic
-from apps.staffpanel.forms import PHOTO_PREFIX
+from apps.seminars.models import Seminar, Speaker
+from apps.seminars.tests.factories import add_talk, make_seminar
 
 pytestmark = pytest.mark.django_db
-
-
-def image_upload(name: str = "photo.png") -> SimpleUploadedFile:
-    """Настоящий PNG: ImageField проверяет содержимое, а не расширение."""
-    from PIL import Image
-
-    buffer = BytesIO()
-    Image.new("RGB", (4, 4), "white").save(buffer, format="PNG")
-    return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/png")
 
 
 @pytest.fixture
@@ -114,26 +102,26 @@ def test_secretary_can_manage_seminars(as_secretary):
 
 
 def test_list_shows_all_statuses_including_drafts(as_secretary):
-    topic = make_topic()
-    make_seminar(
-        timezone.localdate(),
-        topic=topic,
-        suffix="d",
-        status=Seminar.Status.DRAFT,
-        title_ru="Черновик заседания",
-    )
-    make_seminar(
-        timezone.localdate(),
-        topic=topic,
-        suffix="h",
-        status=Seminar.Status.HIDDEN,
-        title_ru="Скрытое заседание",
-    )
+    draft = make_seminar(timezone.localdate(), suffix="d", status=Seminar.Status.DRAFT)
+    add_talk(draft, "Доклад в черновике", [("Иванов И. И.", "ИКИ РАН")])
+    hidden = make_seminar(timezone.localdate(), suffix="h", status=Seminar.Status.HIDDEN)
+    add_talk(hidden, "Доклад в скрытом", [("Петров П. П.", "ИКИ РАН")])
 
     content = as_secretary.get(reverse("staffpanel:seminar_list")).content.decode()
 
-    assert "Черновик заседания" in content
-    assert "Скрытое заседание" in content
+    assert "Доклад в черновике" in content
+    assert "Доклад в скрытом" in content
+
+
+def test_list_identifies_seminars_by_talk_and_speaker(as_secretary):
+    """Тематики больше нет: в управлении заседание опознаётся по докладу."""
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    add_talk(seminar, "Турбулентность солнечного ветра", [("Смирнов Андрей", "ИКИ РАН")])
+
+    content = as_secretary.get(reverse("staffpanel:seminar_list")).content.decode()
+
+    assert "Турбулентность солнечного ветра" in content
+    assert "Смирнов Андрей" in content
 
 
 def test_list_counts_registrations(as_secretary):
@@ -149,15 +137,10 @@ def test_list_counts_registrations(as_secretary):
 # --- Создание и правка --------------------------------------------------------
 
 
-def seminar_payload(topic: Topic | str, **overrides) -> dict:
+def seminar_payload(**overrides) -> dict:
     data = {
         "date": (timezone.localdate() + timedelta(days=20)).isoformat(),
         "start_time": "11:00",
-        # Тематика вводится названием, а не выбирается из списка, поэтому
-        # годится и название несуществующей — её заведёт сама форма.
-        "topic": topic if isinstance(topic, str) else topic.name_ru,
-        "title_ru": "Новое заседание про плазму",
-        "title_en": "",
         "abstract_ru": "",
         "abstract_en": "",
         "place_ru": "ИКИ РАН",
@@ -183,9 +166,7 @@ def seminar_payload(topic: Topic | str, **overrides) -> dict:
 
 
 def test_create_seminar_with_talk_and_speaker(as_secretary):
-    topic = make_topic()
-
-    response = as_secretary.post(reverse("staffpanel:seminar_create"), seminar_payload(topic))
+    response = as_secretary.post(reverse("staffpanel:seminar_create"), seminar_payload())
 
     assert response.status_code == 302
     seminar = Seminar.objects.get()
@@ -197,11 +178,10 @@ def test_create_seminar_with_talk_and_speaker(as_secretary):
 
 def test_speakers_are_reused_not_duplicated(as_secretary):
     """Один и тот же докладчик выступает годами — справочник плодиться не должен."""
-    topic = make_topic()
-    as_secretary.post(reverse("staffpanel:seminar_create"), seminar_payload(topic))
+    as_secretary.post(reverse("staffpanel:seminar_create"), seminar_payload())
     as_secretary.post(
         reverse("staffpanel:seminar_create"),
-        seminar_payload(topic, title_ru="Второе заседание"),
+        seminar_payload(**{"talks-0-title_ru": "Второй доклад"}),
     )
 
     assert Speaker.objects.count() == 1
@@ -209,9 +189,7 @@ def test_speakers_are_reused_not_duplicated(as_secretary):
 
 
 def test_speaker_order_is_kept_from_input(as_secretary):
-    topic = make_topic()
     payload = seminar_payload(
-        topic,
         **{"talks-0-speakers_raw": "Чернецов Никита Севирович\nКавокин Кирилл Витальевич"},
     )
 
@@ -226,9 +204,7 @@ def test_speaker_order_is_kept_from_input(as_secretary):
 
 def test_new_seminar_feeds_search_index(as_secretary):
     """Доклад сохраняется после заседания — поисковый текст надо пересобрать."""
-    topic = make_topic()
-
-    as_secretary.post(reverse("staffpanel:seminar_create"), seminar_payload(topic))
+    as_secretary.post(reverse("staffpanel:seminar_create"), seminar_payload())
 
     seminar = Seminar.objects.get()
     assert "Турбулентность солнечного ветра" in seminar.search_text
@@ -236,8 +212,7 @@ def test_new_seminar_feeds_search_index(as_secretary):
 
 
 def test_online_seminar_rejects_pass_requirement(as_secretary):
-    topic = make_topic()
-    payload = seminar_payload(topic, seminar_format=Seminar.Format.ONLINE, pass_required="on")
+    payload = seminar_payload(seminar_format=Seminar.Format.ONLINE, pass_required="on")
 
     response = as_secretary.post(reverse("staffpanel:seminar_create"), payload)
 
@@ -247,10 +222,8 @@ def test_online_seminar_rejects_pass_requirement(as_secretary):
 
 
 def test_invalid_form_does_not_create_anything(as_secretary):
-    topic = make_topic()
-
     response = as_secretary.post(
-        reverse("staffpanel:seminar_create"), seminar_payload(topic, title_ru="")
+        reverse("staffpanel:seminar_create"), seminar_payload(**{"talks-0-title_ru": ""})
     )
 
     assert response.status_code == 422
@@ -285,23 +258,20 @@ def test_edit_form_prefills_date_and_time(as_secretary):
 
 
 def test_invalid_form_lists_problems_above_the_form(as_secretary):
-    topic = make_topic()
-
     response = as_secretary.post(
-        reverse("staffpanel:seminar_create"), seminar_payload(topic, title_ru="", date="")
+        reverse("staffpanel:seminar_create"),
+        seminar_payload(date="", **{"talks-0-title_ru": ""}),
     )
 
     content = response.content.decode()
     assert "Не сохранено" in content
     assert "Дата: Обязательное поле." in response.context["errors"]
-    assert "Тема заседания: Обязательное поле." in response.context["errors"]
+    assert "Название доклада: Обязательное поле." in response.context["errors"]
 
 
 def test_summary_collects_errors_from_talks_and_materials(as_secretary):
     """Ошибка во вложенной форме иначе видна только при прокрутке до неё."""
-    topic = make_topic()
     payload = seminar_payload(
-        topic,
         **{
             "talks-0-speakers_raw": "АБ",
             "materials-TOTAL_FORMS": "1",
@@ -314,173 +284,51 @@ def test_summary_collects_errors_from_talks_and_materials(as_secretary):
     errors = as_secretary.post(reverse("staffpanel:seminar_create"), payload).context["errors"]
 
     assert "Докладчики: Слишком короткое имя докладчика: «АБ»" in errors
-    assert "Приложите файл или укажите ссылку." in errors
+    assert "Ссылка: Обязательное поле." in errors
+
+
+def test_archive_material_with_a_file_does_not_demand_a_link(as_secretary):
+    """У перенесённого архива вместо ссылки лежит скачанный файл.
+
+    Требуй форма ссылку и от него — заседание со старого сайта перестало бы
+    сохраняться, пока секретарь не придумает, что вписать.
+    """
+    from django.core.files.base import ContentFile
+
+    from apps.seminars.models import Material
+
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
+    material = Material(seminar=seminar, kind=Material.Kind.ABSTRACT)
+    material.file.save("annotation.pdf", ContentFile(b"%PDF-1.4"), save=True)
+
+    response = as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
+        seminar_payload(
+            **{
+                "talks-INITIAL_FORMS": "1",
+                "talks-0-id": talk.pk,
+                "talks-0-title_ru": talk.title_ru,
+                "talks-0-speakers_raw": "Иванов Иван Иванович — ИКИ РАН",
+                "materials-TOTAL_FORMS": "1",
+                "materials-INITIAL_FORMS": "1",
+                "materials-0-id": material.pk,
+                "materials-0-kind": material.kind,
+                "materials-0-title_ru": "",
+                "materials-0-url": "",
+            }
+        ),
+    )
+
+    assert response.status_code == 302
+    material.refresh_from_db()
+    assert material.file, "файл из архива не должен пропасть при сохранении"
 
 
 def test_saved_form_has_no_summary(as_secretary):
     content = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
 
     assert "formsummary" not in content
-
-
-# --- Тематика -------------------------------------------------------------------
-
-
-def test_topic_field_suggests_existing_topics(as_secretary):
-    make_topic()
-
-    content = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
-
-    assert '<datalist id="topic-options">' in content
-    assert '<option value="Физика космической плазмы"></option>' in content
-
-
-def test_known_topic_is_matched_by_name(as_secretary):
-    topic = make_topic()
-
-    as_secretary.post(
-        reverse("staffpanel:seminar_create"),
-        seminar_payload("  физика КОСМИЧЕСКОЙ плазмы "),
-    )
-
-    assert Topic.objects.count() == 1, "регистр и лишние пробелы не должны плодить рубрики"
-    assert Seminar.objects.get().topic == topic
-
-
-def test_unknown_topic_is_created_from_free_input(as_secretary):
-    topic = make_topic()
-
-    response = as_secretary.post(
-        reverse("staffpanel:seminar_create"), seminar_payload("Космическая погода")
-    )
-
-    assert response.status_code == 302
-    created = Topic.objects.get(name_ru="Космическая погода")
-    assert created.slug == "kosmicheskaya-pogoda", "адрес нужен латиницей: slugify её не делает"
-    assert created.short_ru == "Космическая погода"
-    assert created.order > topic.order, "новая рубрика встаёт в конец списка"
-    assert Seminar.objects.get().topic == created
-
-
-def test_new_topic_is_not_created_when_form_is_invalid(as_secretary):
-    """Опечатка в соседнем поле не должна оставлять рубрику в справочнике."""
-    make_topic()
-
-    as_secretary.post(
-        reverse("staffpanel:seminar_create"),
-        seminar_payload("Космическая погода", title_ru=""),
-    )
-
-    assert Topic.objects.count() == 1
-
-
-def test_topic_left_without_seminars_is_dropped(as_secretary):
-    """Иначе опечатку в названии нечем убрать: справочника рубрик в панели нет."""
-    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
-    mistyped = seminar.topic
-
-    as_secretary.post(
-        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
-        seminar_payload("Астробиология"),
-    )
-
-    assert not Topic.objects.filter(pk=mistyped.pk).exists()
-    assert Seminar.objects.get(pk=seminar.pk).topic.name_ru == "Астробиология"
-
-
-def test_topic_with_other_seminars_survives(as_secretary):
-    topic = make_topic()
-    seminar = make_seminar(timezone.localdate() + timedelta(days=5), topic=topic, suffix="a")
-    make_seminar(timezone.localdate() + timedelta(days=9), topic=topic, suffix="b")
-
-    as_secretary.post(
-        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
-        seminar_payload("Астробиология"),
-    )
-
-    assert Topic.objects.filter(pk=topic.pk).exists()
-
-
-# --- Фотографии докладчиков -----------------------------------------------------
-
-
-def talk_payload(talk, speaker, **extra) -> dict:
-    """Правка заседания с одним уже сохранённым докладом."""
-    return {
-        "talks-INITIAL_FORMS": "1",
-        "talks-0-id": talk.pk,
-        "talks-0-title_ru": talk.title_ru,
-        "talks-0-speakers_raw": f"{speaker.full_name_ru} — {speaker.affiliation_ru}",
-    } | extra
-
-
-def test_photo_fields_appear_only_for_saved_speakers(as_secretary):
-    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
-    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
-    speaker = talk.ordered_speakers[0]
-
-    edit = as_secretary.get(
-        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk})
-    ).content.decode()
-    create = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
-
-    assert f'name="talks-0-{PHOTO_PREFIX}{speaker.pk}"' in edit
-    assert "Фото: Иванов Иван Иванович" in edit
-    assert PHOTO_PREFIX not in create, "докладчика ещё нет — привязывать фото не к чему"
-
-
-def test_speaker_photo_is_uploaded(as_secretary):
-    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
-    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
-    speaker = talk.ordered_speakers[0]
-    payload = seminar_payload(
-        seminar.topic,
-        **talk_payload(talk, speaker, **{f"talks-0-{PHOTO_PREFIX}{speaker.pk}": image_upload()}),
-    )
-
-    response = as_secretary.post(
-        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload
-    )
-
-    assert response.status_code == 302
-    speaker.refresh_from_db()
-    assert speaker.photo.name.startswith("speakers/")
-
-
-def test_speaker_photo_survives_untouched_form(as_secretary):
-    """Сохранение заседания без нового файла не должно стирать прежнее фото."""
-    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
-    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
-    speaker = talk.ordered_speakers[0]
-    speaker.photo = image_upload()
-    speaker.save()
-    was = speaker.photo.name
-
-    as_secretary.post(
-        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
-        seminar_payload(seminar.topic, **talk_payload(talk, speaker)),
-    )
-
-    speaker.refresh_from_db()
-    assert speaker.photo.name == was
-    assert speaker.photo.storage.exists(was), "файл не должен исчезнуть с диска"
-
-
-def test_speaker_photo_can_be_cleared(as_secretary):
-    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
-    talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
-    speaker = talk.ordered_speakers[0]
-    speaker.photo = image_upload()
-    speaker.save()
-    payload = seminar_payload(
-        seminar.topic,
-        **talk_payload(talk, speaker, **{f"talks-0-{PHOTO_PREFIX}{speaker.pk}-clear": "on"}),
-    )
-
-    as_secretary.post(reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload)
-
-    speaker.refresh_from_db()
-    assert not speaker.photo
 
 
 # --- Клонирование -------------------------------------------------------------
@@ -560,9 +408,8 @@ def test_toggle_ignores_foreign_referer(as_secretary):
 
 
 def test_registrations_filtered_by_seminar(as_secretary):
-    topic = make_topic()
-    first = make_seminar(timezone.localdate() + timedelta(days=5), topic=topic, suffix="a")
-    second = make_seminar(timezone.localdate() + timedelta(days=9), topic=topic, suffix="b")
+    first = make_seminar(timezone.localdate() + timedelta(days=5), suffix="a")
+    second = make_seminar(timezone.localdate() + timedelta(days=9), suffix="b")
     make_registration(first, full_name="Первый Участник", email="one@example.org")
     make_registration(second, full_name="Второй Участник", email="two@example.org")
 
@@ -635,9 +482,8 @@ def test_csv_opens_in_excel_without_mojibake(as_secretary):
 
 
 def test_csv_respects_active_filters(as_secretary):
-    topic = make_topic()
-    first = make_seminar(timezone.localdate() + timedelta(days=5), topic=topic, suffix="a")
-    second = make_seminar(timezone.localdate() + timedelta(days=9), topic=topic, suffix="b")
+    first = make_seminar(timezone.localdate() + timedelta(days=5), suffix="a")
+    second = make_seminar(timezone.localdate() + timedelta(days=9), suffix="b")
     make_registration(first, full_name="Нужный Участник", email="one@example.org")
     make_registration(second, full_name="Лишний Участник", email="two@example.org")
 

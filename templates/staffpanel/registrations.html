@@ -17,7 +17,7 @@
         <select name="seminar">
           {% for s in seminars %}
             <option value="{{ s.pk }}" {% if seminar and seminar.pk == s.pk %}selected{% endif %}>
-              {{ s.date|date:"d.m.Y" }} — {{ s.title_ru|truncatechars:60 }}
+              {{ s.date|date:"d.m.Y" }} — {{ s.label|truncatechars:60 }}
             </option>
           {% endfor %}
         </select>
