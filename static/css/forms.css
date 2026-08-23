@@ -48,7 +48,7 @@
 .modal__title {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: 24px;
+  font-size: 23px;
   line-height: 1.2;
 }
 .modal__close {
@@ -59,7 +59,7 @@
   background: var(--surface-raised);
   border-radius: 2px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 17.5px;
   color: var(--ink-muted);
   line-height: 1;
 }
@@ -96,8 +96,8 @@
 .regform__subject {
   margin: 0 0 18px;
   padding-bottom: 18px;
-  border-bottom: 1px solid #e2ded4;
-  font-size: 13.5px;
+  border-bottom: 1px solid var(--rule-soft);
+  font-size: 15px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
@@ -144,11 +144,11 @@
 .fmt__label {
   display: block;
   font-weight: 600;
-  font-size: 14.5px;
+  font-size: 15.5px;
 }
 .fmt__note {
   display: block;
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--ink-muted);
   margin-top: 3px;
 }
@@ -186,21 +186,21 @@
   min-height: 48px;
   padding: 12px 14px;
   /* 16px — иначе iOS Safari зумит при фокусе. */
-  font-size: 16px;
+  font-size: 17.5px;
   border: 1px solid var(--border-input);
   background: var(--surface-raised);
   border-radius: 2px;
   outline: none;
 }
 .field-row--error input {
-  border-color: var(--accent);
-  background: #fffaf8;
+  border-color: var(--error-ink);
+  background: var(--error-bg);
 }
 .field-row__err {
   display: block;
   margin-top: 6px;
-  font-size: 12.5px;
-  color: var(--accent);
+  font-size: 14px;
+  color: var(--error-ink);
 }
 
 .passhint {
@@ -214,7 +214,7 @@
 }
 .passhint__tag {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--accent);
   letter-spacing: 0.1em;
   padding-top: 2px;
@@ -222,8 +222,8 @@
 }
 .passhint p {
   margin: 0;
-  font-size: 12.5px;
-  color: #5a3529;
+  font-size: 14px;
+  color: var(--ink-muted);
   text-wrap: pretty;
 }
 .passhint[hidden] {
@@ -235,7 +235,7 @@
   gap: 11px;
   align-items: flex-start;
   margin-top: 18px;
-  font-size: 13px;
+  font-size: 14.5px;
   cursor: pointer;
   text-wrap: pretty;
 }
@@ -247,13 +247,13 @@
   accent-color: var(--accent);
 }
 .consent--error {
-  color: var(--accent);
+  color: var(--error-ink);
 }
 
 .formerror {
   margin: 12px 0 0;
-  font-size: 13px;
-  color: var(--accent);
+  font-size: 14.5px;
+  color: var(--error-ink);
 }
 
 /* Honeypot: убран из потока и из последовательности фокуса, но не display:none —
@@ -295,7 +295,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 17.5px;
 }
 .sent__title {
   margin: 0;
@@ -305,7 +305,7 @@
 }
 .sent__text {
   margin: 8px 0 0;
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
@@ -318,7 +318,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 10px 16px;
-  font-size: 13.5px;
+  font-size: 15px;
 }
 .sent__summary dt {
   color: var(--ink-meta);
@@ -330,7 +330,7 @@
 }
 .mono {
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 14px;
 }
 
 .prose {

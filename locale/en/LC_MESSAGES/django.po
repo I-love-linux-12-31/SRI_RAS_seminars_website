@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SRAofRAS seminars\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 23:32+0300\n"
+"POT-Creation-Date: 2026-08-23 05:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -523,8 +523,8 @@ msgstr "Go to the archive"
 msgid "Ошибка сервера"
 msgstr "Server error"
 
-#: templates/500.html:10 templates/base.html:6 templates/base.html:34
-#: templates/base.html:73 templates/registrations/email/confirmation.txt:15
+#: templates/500.html:10 templates/base.html:6 templates/base.html:40
+#: templates/base.html:80 templates/registrations/email/confirmation.txt:15
 msgid "Научный семинар ИКИ РАН"
 msgstr "IKI RAS Scientific Seminar"
 
@@ -549,7 +549,7 @@ msgstr ""
 "Scientific seminar of the Space Research Institute of the Russian Academy of "
 "Sciences: the next meeting and the archive of talks."
 
-#: templates/base.html:20 templates/base.html:74
+#: templates/base.html:20 templates/base.html:81
 msgid "Институт космических исследований Российской академии наук"
 msgstr "Space Research Institute of the Russian Academy of Sciences"
 
@@ -557,11 +557,15 @@ msgstr "Space Research Institute of the Russian Academy of Sciences"
 msgid "Язык сайта"
 msgstr "Site language"
 
-#: templates/base.html:33
+#: templates/base.html:36
+msgid "Институт космических исследований РАН"
+msgstr "Space Research Institute of RAS"
+
+#: templates/base.html:39
 msgid "Научный семинар · с 1966 года"
 msgstr "Scientific seminar · since 1966"
 
-#: templates/base.html:35
+#: templates/base.html:41
 msgid ""
 "Заседания проходят раз в месяц: доклады по физике космоса, планетным "
 "исследованиям и космическому приборостроению. Участие очное и онлайн, вход "
@@ -571,50 +575,50 @@ msgstr ""
 "research and space instrument engineering. You can attend in person or "
 "online; entry to the institute requires a pass."
 
-#: templates/base.html:39
+#: templates/base.html:46
 msgid "Основная навигация"
 msgstr "Main navigation"
 
-#: templates/base.html:42
+#: templates/base.html:49
 msgid "Главная"
 msgstr "Home"
 
-#: templates/base.html:43 templates/seminars/about.html:4
+#: templates/base.html:50 templates/seminars/about.html:4
 #: templates/seminars/about.html:8
 msgid "О семинаре"
 msgstr "About"
 
-#: templates/base.html:44
+#: templates/base.html:51
 msgid "Архив"
 msgstr "Archive"
 
-#: templates/base.html:46
+#: templates/base.html:53
 msgid "Управление"
 msgstr "Manage"
 
-#: templates/base.html:63 templates/registrations/page.html:4
+#: templates/base.html:70 templates/registrations/page.html:4
 #: templates/registrations/page.html:10
 msgid "Регистрация на семинар"
 msgstr "Seminar registration"
 
-#: templates/base.html:64 templates/registrations/_notice.html:5
+#: templates/base.html:71 templates/registrations/_notice.html:5
 #: templates/registrations/_success.html:27
 msgid "Закрыть"
 msgstr "Close"
 
-#: templates/base.html:77
+#: templates/base.html:84
 msgid "руководитель семинара"
 msgstr "seminar chair"
 
-#: templates/base.html:79
+#: templates/base.html:86
 msgid "секретарь семинара"
 msgstr "seminar secretary"
 
-#: templates/base.html:83
+#: templates/base.html:90
 msgid "контакты"
 msgstr "contacts"
 
-#: templates/base.html:86 templates/core/privacy.html:4
+#: templates/base.html:94 templates/core/privacy.html:4
 #: templates/core/privacy.html:8
 msgid "Обработка персональных данных"
 msgstr "Personal data processing"
@@ -948,8 +952,8 @@ msgid "Поиск"
 msgstr "Search"
 
 #: templates/seminars/archive.html:20
-msgid "Поиск по теме или докладчику"
-msgstr "Search by subject or speaker"
+msgid "Поиск по докладу или докладчику"
+msgstr "Search by talk or speaker"
 
 #: templates/seminars/archive.html:23
 msgid "Год"

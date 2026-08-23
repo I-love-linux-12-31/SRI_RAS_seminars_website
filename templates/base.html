@@ -30,9 +30,16 @@
 
 <header class="masthead">
   <div class="wrap masthead__inner">
-    <div class="masthead__kicker">{% translate "Научный семинар · с 1966 года" %}</div>
-    <h1>{% translate "Научный семинар ИКИ РАН" %}</h1>
-    <p class="masthead__sub">{% translate "Заседания проходят раз в месяц: доклады по физике космоса, планетным исследованиям и космическому приборостроению. Участие очное и онлайн, вход по пропуску." %}</p>
+    <a class="masthead__logo" href="https://iki.cosmos.ru/" target="_blank" rel="noopener">
+      <img src="{% static 'images/960px-Space_Research_Institute_Logo.svg.png' %}"
+           width="960" height="440"
+           alt="{% translate 'Институт космических исследований РАН' %}">
+    </a>
+    <div class="masthead__text">
+      <div class="masthead__kicker">{% translate "Научный семинар · с 1966 года" %}</div>
+      <h1>{% translate "Научный семинар ИКИ РАН" %}</h1>
+      <p class="masthead__sub">{% translate "Заседания проходят раз в месяц: доклады по физике космоса, планетным исследованиям и космическому приборостроению. Участие очное и онлайн, вход по пропуску." %}</p>
+    </div>
   </div>
 </header>
 
@@ -70,18 +77,19 @@
   <div class="wrap footer__inner">
     <div>
       <div class="footer__brand">{% translate "Научный семинар ИКИ РАН" %}</div>
-      <div style="font-size:13px;margin-top:8px">{% translate "Институт космических исследований Российской академии наук" %}</div>
+      <div style="font-size:15px;margin-top:8px">{% translate "Институт космических исследований Российской академии наук" %}</div>
     </div>
-    <div style="font-size:13px">
+    <div style="font-size:15px">
       <div class="footer__label">{% translate "руководитель семинара" %}</div>
       <div class="footer__value">{{ site|tr:"chair"|default:"—" }}</div>
       <div class="footer__label" style="margin-top:16px">{% translate "секретарь семинара" %}</div>
       <div class="footer__value">{{ site|tr:"secretary"|default:"—" }}</div>
     </div>
-    <div style="font-size:13px">
+    <div style="font-size:15px">
       <div class="footer__label">{% translate "контакты" %}</div>
       <div style="margin-top:6px"><a href="mailto:{{ site.email }}">{{ site.email }}</a></div>
       <div style="margin-top:6px">{{ site|tr:"address" }}</div>
+      <div style="margin-top:6px"><a href="https://iki.cosmos.ru/" target="_blank" rel="noopener">iki.cosmos.ru</a></div>
       <div style="margin-top:12px"><a href="{% url 'seminars:privacy' %}">{% translate "Обработка персональных данных" %}</a></div>
     </div>
   </div>

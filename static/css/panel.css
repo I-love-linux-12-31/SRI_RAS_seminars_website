@@ -36,7 +36,7 @@
 .flash__item {
   padding: 11px 15px;
   border-radius: 2px;
-  font-size: 13.5px;
+  font-size: 15px;
   border: 1px solid var(--rule);
   background: var(--surface-raised);
 }
@@ -46,9 +46,9 @@
   color: var(--ok-ink);
 }
 .flash__item--error {
-  border-color: var(--accent-wash-border);
-  background: var(--accent-wash);
-  color: var(--accent-hover);
+  border-color: var(--error-border);
+  background: var(--error-bg);
+  color: var(--error-ink);
 }
 
 /* --- Вкладки -------------------------------------------------------------- */
@@ -62,12 +62,12 @@
   scrollbar-width: none;
 }
 .tab {
-  font-size: 13.5px;
+  font-size: 15px;
   padding: 12px 18px;
   min-height: var(--tap);
   display: flex;
   align-items: center;
-  color: #5a6068;
+  color: var(--ink-muted);
   border: 1px solid transparent;
   border-radius: var(--radius) var(--radius) 0 0;
   margin-bottom: -1px;
@@ -104,7 +104,7 @@
 .stat__label {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -112,7 +112,7 @@
 .stat__value {
   margin: 8px 0 0;
   font-family: var(--font-serif);
-  font-size: 30px;
+  font-size: 26px;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -128,13 +128,13 @@
 .dtable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 15px;
 }
 .dtable th {
   text-align: left;
   padding: 12px 16px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -153,7 +153,7 @@
 }
 .dtable__date {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13.5px;
   white-space: nowrap;
 }
 .dtable__num {
@@ -164,7 +164,7 @@
 .dtable__title {
   display: block;
   font-family: var(--font-serif);
-  font-size: 16px;
+  font-size: 17.5px;
   line-height: 1.3;
   color: var(--ink);
   text-wrap: pretty;
@@ -175,7 +175,7 @@
 }
 .dtable__sub {
   display: block;
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--ink-meta);
   margin-top: 4px;
 }
@@ -184,6 +184,9 @@
   flex-wrap: wrap;
   gap: 6px;
   justify-content: flex-end;
+  /* При крупном кегле колонка иначе схлопывается и кнопки встают
+     столбиком на всю высоту строки. */
+  min-width: 16em;
 }
 .dtable__acts form {
   margin: 0;
@@ -201,8 +204,8 @@
 }
 .badge--draft {
   color: var(--ink-muted);
-  border-color: #d5d0c4;
-  background: #f0ede6;
+  border-color: var(--rule);
+  background: var(--surface-sunken);
 }
 
 .passform {
@@ -217,7 +220,7 @@
   background: var(--surface);
   border-radius: 2px;
   padding: 0 8px;
-  font-size: 13px;
+  font-size: 14.5px;
   cursor: pointer;
 }
 
@@ -257,7 +260,7 @@
     content: attr(data-label);
     flex: none;
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 12.5px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-meta);
@@ -292,9 +295,9 @@
 .formsummary {
   margin: clamp(20px, 2.6vw, 30px) 0 0;
   padding: 14px 16px;
-  border: 1px solid var(--accent-wash-border);
-  border-left: 3px solid var(--accent);
-  background: var(--accent-wash);
+  border: 1px solid var(--error-border);
+  border-left: 3px solid var(--error-ink);
+  background: var(--error-bg);
   border-radius: 2px;
   max-width: 780px;
 }
@@ -304,13 +307,13 @@
 .formsummary__title {
   margin: 0;
   font-weight: 600;
-  font-size: 13.5px;
-  color: var(--accent-hover);
+  font-size: 15px;
+  color: var(--error-ink);
 }
 .formsummary__list {
   margin: 8px 0 0;
   padding-left: 20px;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
 }
 .formsummary__list li + li {
@@ -333,14 +336,14 @@
   padding: 0 8px;
   margin-left: -8px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-meta);
 }
 .fset__hint {
   margin: 0 0 14px;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
@@ -357,7 +360,7 @@
   display: block;
   margin-bottom: 6px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -374,7 +377,7 @@
   min-height: 48px;
   padding: 12px 14px;
   /* 16px — иначе iOS Safari зумит страницу при фокусе. */
-  font-size: 16px;
+  font-size: 17.5px;
   border: 1px solid var(--border-input);
   background: var(--surface);
   border-radius: 2px;
@@ -393,18 +396,18 @@
 .afield--error input,
 .afield--error select,
 .afield--error textarea {
-  border-color: var(--accent);
-  background: #fffaf8;
+  border-color: var(--error-ink);
+  background: var(--error-bg);
 }
 .afield__hint {
   margin: 6px 0 0;
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--ink-meta);
   text-wrap: pretty;
 }
 .afield__err {
   margin: 6px 0 0;
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--accent);
 }
 
@@ -415,7 +418,7 @@
 }
 .lang-extra summary {
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
   min-height: 38px;
   display: flex;
@@ -445,7 +448,7 @@
   display: flex;
   gap: 9px;
   align-items: center;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
   min-height: var(--tap);
   cursor: pointer;
@@ -502,14 +505,14 @@
 }
 .note-card__tag {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--accent);
   padding-top: 2px;
   white-space: nowrap;
 }
 .note-card p {
   margin: 0;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }

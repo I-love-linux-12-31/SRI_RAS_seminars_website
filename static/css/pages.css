@@ -20,7 +20,7 @@
 .section__title {
   margin: 0 0 22px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ink-muted);
@@ -44,7 +44,7 @@
   margin: 0;
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: clamp(28px, 4vw, 44px);
+  font-size: clamp(23px, 2.4vw, 29px);
   line-height: 1.1;
   letter-spacing: -0.015em;
   text-wrap: pretty;
@@ -60,8 +60,8 @@
 
 .lede {
   margin: 20px 0 0;
-  font-size: 15px;
-  color: #31363d;
+  font-size: 17px;
+  color: var(--ink-muted);
   max-width: 44em;
   text-wrap: pretty;
 }
@@ -88,7 +88,7 @@
   background: none;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
@@ -108,18 +108,18 @@
 .count,
 .note {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--ink-meta);
   margin: 0;
 }
 .note {
   margin-top: 14px;
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 14.5px;
 }
 .note--mono {
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 14px;
 }
 
 .tnum {
@@ -131,7 +131,7 @@
 .kicker {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent);
@@ -161,11 +161,11 @@
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 11px 16px;
-  font-size: 13.5px;
+  font-size: 15px;
 }
 .deflist dt {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -188,13 +188,13 @@
 .person__name {
   margin: 0;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 17px;
   text-wrap: pretty;
 }
 .person__aff {
   margin: 4px 0 0;
   color: var(--ink-muted);
-  font-size: 13px;
+  font-size: 14.5px;
   text-wrap: pretty;
 }
 
@@ -227,18 +227,18 @@
 }
 .card__num {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--accent);
 }
 .card h4 {
   margin: 0;
   font-family: var(--font-serif);
   font-weight: 500;
-  font-size: 19px;
+  font-size: 20px;
 }
 .card p {
   margin: 10px 0 0;
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
@@ -259,12 +259,12 @@
   color: inherit;
 }
 .minilist__link:hover {
-  background: #edeae2;
+  background: var(--surface-sunken);
   text-decoration: none;
 }
 .minilist__date {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--ink-meta);
   padding-top: 4px;
   white-space: nowrap;
@@ -272,13 +272,13 @@
 .minilist__title {
   display: block;
   font-family: var(--font-serif);
-  font-size: 19px;
+  font-size: 20px;
   line-height: 1.3;
   text-wrap: pretty;
 }
 .minilist__who {
   display: block;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
   margin-top: 5px;
 }
@@ -288,7 +288,7 @@
   gap: 4px;
 }
 .minilist--compact .minilist__title {
-  font-size: 15.5px;
+  font-size: 17px;
 }
 
 /* --- Архив: фильтры ------------------------------------------------------- */
@@ -317,7 +317,7 @@
 }
 .search__icon {
   color: var(--ink-meta);
-  font-size: 14px;
+  font-size: 15.5px;
 }
 .search input {
   flex: 1;
@@ -325,7 +325,7 @@
   border: 0;
   background: none;
   /* 16px, иначе iOS Safari зумит страницу при фокусе на поле. */
-  font-size: 16px;
+  font-size: 17.5px;
   padding: 11px 0;
   outline: none;
 }
@@ -339,7 +339,7 @@
   background: var(--surface-raised);
   border-radius: 2px;
   padding: 0 12px;
-  font-size: 14px;
+  font-size: 15.5px;
   cursor: pointer;
   /* Иначе select растягивается под самый длинный пункт: список заседаний
      содержит полные названия и уводил страницу в горизонтальную прокрутку. */
@@ -363,7 +363,7 @@
 .row__date {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -374,20 +374,20 @@
   margin: 0;
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: 20px;
+  font-size: 21px;
   line-height: 1.28;
   text-wrap: pretty;
 }
 .row__who {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
 .row__extra {
   margin: 6px 0 0;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--ink-meta);
 }
 .row__side {
@@ -412,7 +412,7 @@
 
 .badge {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   padding: 3px 7px;
@@ -429,21 +429,21 @@
 }
 
 .filelink {
-  font-size: 13px;
+  font-size: 14.5px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
 .empty {
-  border: 1px dashed #c9c4b7;
+  border: 1px dashed var(--border-input);
   border-radius: var(--radius);
   padding: 56px 24px;
   text-align: center;
 }
 .empty__title {
   font-family: var(--font-serif);
-  font-size: 22px;
+  font-size: 21px;
   margin: 0 0 8px;
 }
 
@@ -456,7 +456,7 @@
 }
 .pager__pos {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13.5px;
   color: var(--ink-meta);
 }
 
@@ -464,7 +464,7 @@
 
 .back {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-muted);
@@ -476,7 +476,7 @@
   background: var(--warn-bg);
   color: var(--warn-ink);
   border-radius: 2px;
-  font-size: 13px;
+  font-size: 14.5px;
 }
 
 .detail {
@@ -499,7 +499,7 @@
   align-items: center;
   margin: 0 0 16px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -535,13 +535,13 @@
   margin: 7px 0 0;
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: 17px;
+  font-size: 19px;
   line-height: 1.32;
   text-wrap: pretty;
 }
 .talk__abstract {
   margin: 10px 0 0;
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
@@ -564,7 +564,7 @@
   padding: 0;
 }
 .panel p {
-  font-size: 14px;
+  font-size: 15.5px;
   text-wrap: pretty;
 }
 .panel__cta {
@@ -576,7 +576,7 @@
   list-style: none;
   margin: 12px 0 0;
   padding: 0;
-  font-size: 13.5px;
+  font-size: 15px;
 }
 .matlist li {
   display: flex;
@@ -597,17 +597,17 @@
 .about__name {
   margin: 8px 0 0;
   font-family: var(--font-serif);
-  font-size: 22px;
+  font-size: 21px;
   line-height: 1.25;
 }
 .about__role {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: 14.5px;
   color: var(--ink-muted);
 }
 .about__contact {
   margin: 8px 0 0;
-  font-size: 15px;
+  font-size: 17px;
 }
 
 .nav__cta {
@@ -622,7 +622,7 @@
 }
 .gate__why {
   margin: 18px 0 0;
-  font-size: 14px;
+  font-size: 15.5px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }

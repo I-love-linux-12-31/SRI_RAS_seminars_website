@@ -13,8 +13,8 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
@@ -55,7 +55,7 @@ button {
 
 .mono-label {
   font-family: var(--font-mono);
-  font-size: 11px; /* в макете 10–10.5px — поднято ради читаемости */
+  font-size: 12.5px; /* в макете 10–10.5px — поднято ради читаемости */
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -75,7 +75,7 @@ button {
   justify-content: space-between;
   padding-block: 8px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
@@ -87,8 +87,8 @@ button {
 }
 .lang a {
   padding: 4px 6px;
-  color: #8b929b;
-  font-size: 11px;
+  color: #a7bcc9;
+  font-size: 12.5px;
   letter-spacing: 0.09em;
 }
 .lang a[aria-current="true"] {
@@ -96,41 +96,80 @@ button {
   font-weight: 600;
 }
 .lang span {
-  color: #3a414a;
+  /* Разделитель тем же цветом, что и ссылки: более тусклый не добирал
+     контраста к тёмной полосе. */
+  color: #a7bcc9;
 }
 
+/* Шапка светлая: рисунок из макета — бледные орбиты по холодным серо-синим,
+   и на тёмном фоне он попросту не виден. Рисунок уходит вправо и подрезается
+   краями шапки, логотип института стоит слева и ведёт на iki.cosmos.ru. */
 .masthead {
   position: relative;
-  background: var(--dark);
+  background-color: var(--surface-raised);
+  background-image: url("../images/seminar_banner_1.svg");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: auto 175%;
+  border-bottom: 1px solid var(--rule);
   overflow: hidden;
 }
 .masthead__inner {
   position: relative;
-  padding-block: clamp(30px, 5vw, 60px) clamp(26px, 4vw, 50px);
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 34px);
+  padding-block: clamp(22px, 3.4vw, 40px);
+}
+.masthead__logo {
+  flex: none;
+  display: block;
+}
+.masthead__logo img {
+  display: block;
+  width: clamp(74px, 9vw, 116px);
+  height: auto;
+}
+.masthead__text {
+  min-width: 0;
 }
 .masthead__kicker {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--accent-warm);
-  margin-bottom: 14px;
+  color: var(--accent);
+  margin-bottom: 10px;
 }
 .masthead h1 {
   margin: 0;
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: clamp(30px, 5.2vw, 58px);
-  line-height: 1.03;
-  letter-spacing: -0.015em;
-  color: var(--ink-on-dark);
+  font-size: clamp(26px, 3.4vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--dark);
   max-width: 16em;
 }
 .masthead__sub {
-  margin-top: 16px;
-  font-size: clamp(13px, 1.3vw, 15px);
-  color: #9aa1aa;
+  margin-top: 12px;
+  font-size: clamp(15px, 1.4vw, 17px);
+  color: var(--ink-muted);
   max-width: 46em;
+}
+
+@media (max-width: 620px) {
+  /* На узком экране рисунку места нет: он налезал бы на текст. Логотип
+     при этом уходит наверх — сбоку от высокой колонки текста он повисал
+     посередине без всякой связи с заголовком. */
+  .masthead {
+    background-image: none;
+  }
+  .masthead__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
 }
 
 /* --- Навигация ------------------------------------------------------------ */
@@ -139,8 +178,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: color-mix(in srgb, var(--bg) 94%, transparent);
-  backdrop-filter: blur(10px);
+  background: var(--surface-sunken);
   border-bottom: 1px solid var(--rule);
 }
 .nav__inner {
@@ -151,25 +189,30 @@ button {
 }
 .nav__links {
   display: flex;
-  gap: clamp(14px, 2.4vw, 30px);
+  gap: 2px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 .nav__links a {
-  padding-block: 16px;
-  font-size: 14px;
-  color: #5a6068;
-  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 10px clamp(12px, 1.6vw, 20px);
+  font-size: 15.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
   white-space: nowrap;
 }
 .nav__links a:hover {
   text-decoration: none;
+  background: var(--rule-soft);
   color: var(--ink);
 }
 .nav__links a[aria-current="page"] {
   font-weight: 600;
-  color: var(--ink);
-  border-bottom-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 /* --- Кнопки --------------------------------------------------------------- */
@@ -184,7 +227,7 @@ button {
   border-radius: var(--radius);
   border: 1px solid var(--border-input);
   background: var(--surface-raised);
-  font-size: 14px;
+  font-size: 15.5px;
   font-weight: 500;
   cursor: pointer;
   text-align: center;
@@ -196,12 +239,12 @@ button {
 .btn--primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fcf9f5;
+  color: #ffffff;
 }
 .btn--primary:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
-  color: #fcf9f5;
+  color: #ffffff;
 }
 .btn--ghost {
   background: transparent;
@@ -214,8 +257,8 @@ button {
 }
 .btn--sm {
   min-height: 38px;
-  padding: 8px 15px;
-  font-size: 13px;
+  padding: 8px 13px;
+  font-size: 14px;
 }
 
 /* --- Подвал --------------------------------------------------------------- */
@@ -226,7 +269,7 @@ main {
 
 .footer {
   background: var(--dark);
-  color: #8e959e;
+  color: var(--ink-on-dark-muted);
   margin-top: auto;
 }
 .footer__inner {
@@ -237,18 +280,18 @@ main {
 }
 .footer__brand {
   font-family: var(--font-serif);
-  font-size: 19px;
-  color: #f0ede7;
+  font-size: 20px;
+  color: var(--ink-on-dark);
 }
 .footer__label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #767e88;
+  color: #9fb6c4;
 }
 .footer__value {
-  color: #d5d9de;
+  color: var(--ink-on-dark);
   margin-top: 6px;
 }
 .footer a {

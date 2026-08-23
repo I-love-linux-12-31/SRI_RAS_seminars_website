@@ -27,8 +27,10 @@ PASS_TTL = 2 * 60 * 60
 CODE_TTL = 10 * 60
 
 WIDTH, HEIGHT = 190, 60
-BACKGROUND = (245, 243, 237)
-INK = (26, 26, 26)
+# Те же цвета, что у токенов --surface-sunken и --ink: картинка не должна
+# выпадать из гаммы страницы.
+BACKGROUND = (236, 239, 241)
+INK = (38, 50, 56)
 
 
 def new_code(session) -> str:
