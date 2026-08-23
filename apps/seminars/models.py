@@ -319,6 +319,11 @@ class Material(TranslatedMixin, models.Model):
 
     @property
     def href(self) -> str:
+        """Куда ведёт материал.
+
+        Свой файл отдаётся напрямую, чужая ссылка — через шлюз внешних ссылок:
+        прямых внешних адресов в разметке сайта нет.
+        """
         if self.file:
             return self.file.url
-        return self.url
+        return reverse("seminars:material_link", kwargs={"pk": self.pk})

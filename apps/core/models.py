@@ -1,6 +1,7 @@
 from asgiref.local import Local
 from django.core.cache import cache
 from django.core.signals import request_started
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
@@ -46,18 +47,28 @@ class SiteSettings(models.Model):
     notify_on_registration = models.BooleanField(_("письмо о каждой заявке"), default=True)
     notify_email = models.EmailField(_("куда слать уведомления"), blank=True, default="")
 
-    privacy_policy_url = models.CharField(
-        _("внешняя ссылка на политику обработки ПД"),
-        max_length=300,
+    # Согласие на обработку ПД — единственное, что заказчик отдаёт документом,
+    # а не текстом: формулировку утверждают на бумаге, и на сайте она должна
+    # лежать ровно тем файлом, который утверждён. Ссылка на чужой сайт тоже
+    # не годится — документ обязан открываться со своего адреса.
+    privacy_policy_file = models.FileField(
+        _("документ согласия на обработку ПД"),
+        upload_to="policy/",
         blank=True,
-        default="",
-        help_text=_("Если заполнено, используется вместо страницы на сайте."),
+        validators=[FileExtensionValidator(["pdf"])],
+        help_text=_(
+            "PDF. Открывается по ссылке «Обработка персональных данных» "
+            "в подвале и в форме записи. Пока файла нет, на странице стоит заглушка."
+        ),
     )
-    privacy_policy_text = models.TextField(
-        _("текст согласия на обработку ПД"),
-        blank=True,
-        default="",
-        help_text=_("Согласовывается заказчиком. Пока пусто, на странице стоит заглушка."),
+
+    online_link_captcha = models.BooleanField(
+        _("проверять посетителя перед показом ссылки на трансляцию"),
+        default=True,
+        help_text=_(
+            "Ссылка на видеоконференцию отдаётся после ввода кода с картинки. "
+            "Пройденная проверка помнится два часа."
+        ),
     )
 
     retention_months = models.PositiveSmallIntegerField(

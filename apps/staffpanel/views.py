@@ -307,7 +307,7 @@ class SiteSettingsView(StaffRequiredMixin, View):
     def post(self, request):
         from apps.core.models import SiteSettings
 
-        form = SiteSettingsForm(request.POST, instance=SiteSettings.load())
+        form = SiteSettingsForm(request.POST, request.FILES, instance=SiteSettings.load())
         if not form.is_valid():
             return render(request, self.template_name, self.context(form), status=422)
 

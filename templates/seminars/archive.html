@@ -33,25 +33,27 @@
   </form>
 
   {% if seminars %}
+    {% comment %}Общей темы у заседания нет, поэтому строка архива — это доклад,
+    а не заседание: два доклада одного дня дают две строки со своими
+    докладчиками, а не одну на двоих.{% endcomment %}
     <div class="rows">
       {% for seminar in seminars %}
-        <article class="row">
-          <div class="row__meta">
-            <p class="row__date">{{ seminar.date|date:"d.m.Y" }}</p>
-          </div>
-          <div class="row__body">
-            <h3 class="row__title"><a class="plain" href="{{ seminar.get_absolute_url }}">{{ seminar.lead_talk|tr:"title" }}</a></h3>
-            <p class="row__who">{% for talk in seminar.talks.all %}{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}</p>
-            {% for talk in seminar.other_talks %}
-              <p class="row__extra">{% blocktranslate with title=talk|tr:"title" %}+ ещё доклад: {{ title }}{% endblocktranslate %}</p>
-            {% endfor %}
-          </div>
-          <div class="row__side">
-            {% if seminar.seminar_format == 'online' %}
-              <span class="badge badge--ok">{% translate "Онлайн" %}</span>
-            {% endif %}
-          </div>
-        </article>
+        {% for talk in seminar.talks.all %}
+          <article class="row">
+            <div class="row__meta">
+              <p class="row__date">{{ seminar.date|date:"d.m.Y" }}</p>
+            </div>
+            <div class="row__body">
+              <h3 class="row__title"><a class="plain" href="{{ seminar.get_absolute_url }}">{{ talk|tr:"title" }}</a></h3>
+              <p class="row__who">{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+            </div>
+            <div class="row__side">
+              {% if seminar.seminar_format == 'online' %}
+                <span class="badge badge--ok">{% translate "Онлайн" %}</span>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
       {% endfor %}
     </div>
 

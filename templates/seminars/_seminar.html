@@ -1,0 +1,121 @@
+{% load i18n i18n_extras %}
+{% comment %}
+Заседание целиком: доклады слева, справка справа. Один и тот же блок идёт и на
+странице заседания, и на главной — заказчику вид страницы заседания понравился
+больше, а держать две вёрстки одного и того же значит расходиться в мелочах.
+
+Параметры включения:
+  seminar  — заседание;
+  linked   — заголовок ведёт на страницу заседания (главная);
+  related  — список «другие заседания» (страница заседания).
+{% endcomment %}
+<div class="detail">
+  <div class="detail__main">
+    {% if seminar.is_past %}
+      <p class="crumbs"><span class="crumbs__past">{% translate "заседание прошло" %}</span></p>
+    {% endif %}
+
+    <h2 class="page-title">
+      {% blocktranslate asvar heading with day=seminar.date|date:"j E Y" %}Заседание {{ day }}{% endblocktranslate %}
+      {% if linked %}
+        <a class="plain" href="{{ seminar.get_absolute_url }}">{{ heading }}</a>
+      {% else %}{{ heading }}{% endif %}
+    </h2>
+
+    {% if seminar|tr:"abstract" %}
+      <div class="lede" data-longtext
+           data-more="{% translate 'Показать аннотацию целиком' %}"
+           data-less="{% translate 'Свернуть' %}">{{ seminar|tr:"abstract"|linebreaks }}</div>
+    {% endif %}
+
+    {% comment %}Общей темы у заседания нет: каждый доклад идёт своим блоком
+    со своими докладчиками. Два доклада одного дня — два блока.{% endcomment %}
+    <div class="talks">
+      {% for talk in seminar.talks.all %}
+        <article class="talk">
+          <div class="talk__people">
+            {% for speaker in talk.ordered_speakers %}
+              <div class="person">
+                <p class="person__name">{{ speaker|tr:"full_name" }}</p>
+                <p class="person__aff">{{ speaker|tr:"affiliation" }}</p>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="talk__body">
+            <p class="mono-label">{% translate "Доклад" %}</p>
+            <h3 class="talk__title">{{ talk|tr:"title" }}</h3>
+            {% if talk|tr:"abstract" %}
+              <div class="talk__abstract" data-longtext
+           data-more="{% translate 'Показать аннотацию целиком' %}"
+           data-less="{% translate 'Свернуть' %}">{{ talk|tr:"abstract"|linebreaks }}</div>
+            {% endif %}
+            {% for m in talk.materials.all %}
+              <a class="filelink" href="{{ m.href }}">{{ m.get_kind_display }}</a>
+            {% endfor %}
+          </div>
+        </article>
+      {% empty %}
+        <p class="note">{% translate "Доклады этого заседания ещё не объявлены." %}</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <aside class="detail__side">
+    <div class="panel">
+      <p class="mono-label">{% translate "Когда и где" %}</p>
+      <dl class="deflist deflist--tight">
+        <dt>{% translate "Дата" %}</dt>
+        <dd>{{ seminar.date|date:"j E Y" }}</dd>
+        <dt>{% translate "Время" %}</dt>
+        <dd class="tnum">{{ seminar.start_time|time:"H:i" }} MSK</dd>
+        <dt>{% translate "Место" %}</dt>
+        <dd>{{ seminar|tr:"place" }}</dd>
+        <dt>{% translate "Формат" %}</dt>
+        <dd>{{ seminar.get_seminar_format_display }}</dd>
+        {% if seminar.online_url %}
+          <dt>{% translate "Трансляция" %}</dt>
+          {% comment %}Адрес конференции ведёт через шлюз: в разметке его нет,
+          и краулеру доставать нечего.{% endcomment %}
+          <dd><a rel="nofollow" href="{% url 'seminars:online_link' seminar.slug %}">{% translate "ссылка на видеоконференцию" %}</a></dd>
+        {% endif %}
+      </dl>
+
+      {% if seminar.registration_open %}
+        <a id="register" class="btn btn--primary panel__cta" data-open-register
+           href="{% url 'registrations:register' seminar.slug %}">
+          {% if seminar.pass_required %}{% translate "Записаться и заказать пропуск" %}{% else %}{% translate "Записаться" %}{% endif %}
+        </a>
+        <p class="note">{% blocktranslate with deadline=seminar.registration_deadline|date:"j E, H:i" %}Приём заявок — до {{ deadline }}{% endblocktranslate %}</p>
+      {% elif not seminar.is_past %}
+        <p class="note">{% translate "Приём заявок закрыт." %}</p>
+      {% endif %}
+    </div>
+
+    {% if seminar.materials.all %}
+      <div class="panel">
+        <p class="mono-label">{% translate "Материалы" %}</p>
+        <ul class="matlist">
+          {% for m in seminar.materials.all %}
+            <li><span>{{ m.get_kind_display }}</span><a href="{{ m.href }}">{% translate "открыть" %}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if related %}
+      <div class="panel panel--plain">
+        <p class="mono-label">{% translate "Другие заседания" %}</p>
+        <ul class="minilist minilist--compact">
+          {% for r in related %}
+            <li>
+              <a class="minilist__link" href="{{ r.get_absolute_url }}">
+                <span class="minilist__date">{{ r.date|date:"d.m.Y" }}</span>
+                <span class="minilist__title">{{ r.lead_talk|tr:"title" }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </aside>
+</div>

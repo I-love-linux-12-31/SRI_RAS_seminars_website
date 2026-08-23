@@ -3,6 +3,7 @@
 from datetime import datetime, time, timedelta
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.urls import reverse
 from django.utils import timezone
@@ -329,6 +330,65 @@ def test_saved_form_has_no_summary(as_secretary):
     content = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
 
     assert "formsummary" not in content
+
+
+# --- Настройки сайта ------------------------------------------------------------
+
+
+def settings_payload(**overrides) -> dict:
+    """Заполненная форма настроек: пустыми обязательные поля оставлять нельзя."""
+    data = {
+        "chair_ru": "Зеленый Лев Матвеевич",
+        "chair_en": "",
+        "chair_title_ru": "академик РАН",
+        "chair_title_en": "",
+        "secretary_ru": "Евдокимова Дарья Геннадьевна",
+        "secretary_en": "",
+        "secretary_title_ru": "к. ф.-м. н.",
+        "secretary_title_en": "",
+        "email": "seminar@cosmos.ru",
+        "address_ru": "Москва, ул. Профсоюзная, 84/32",
+        "address_en": "",
+        "registration_lead_hours": "48",
+        "notify_on_registration": "on",
+        "notify_email": "",
+        "online_link_captcha": "on",
+        "retention_months": "6",
+    }
+    return data | overrides
+
+
+def pdf_upload(name: str = "soglasie.pdf") -> SimpleUploadedFile:
+    return SimpleUploadedFile(name, b"%PDF-1.4\ntrailer\n%%EOF\n", content_type="application/pdf")
+
+
+def test_chair_uploads_the_consent_document(client, chair):
+    """Согласие на ПД — единственное, что приходит документом, а не текстом."""
+    from apps.core.models import SiteSettings
+
+    client.force_login(chair)
+
+    response = client.post(
+        reverse("staffpanel:settings"), settings_payload(privacy_policy_file=pdf_upload())
+    )
+
+    assert response.status_code == 302
+    assert SiteSettings.objects.get(pk=1).privacy_policy_file.name.startswith("policy/")
+
+
+def test_consent_document_must_be_a_pdf(client, chair):
+    """Документ открывается по ссылке прямо в браузере — значит, PDF."""
+    from apps.core.models import SiteSettings
+
+    client.force_login(chair)
+
+    response = client.post(
+        reverse("staffpanel:settings"),
+        settings_payload(privacy_policy_file=SimpleUploadedFile("soglasie.docx", b"PK\x03\x04")),
+    )
+
+    assert response.status_code == 422
+    assert not SiteSettings.objects.get(pk=1).privacy_policy_file
 
 
 # --- Клонирование -------------------------------------------------------------

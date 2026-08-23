@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Ссылка на видеоконференцию" %} — {{ block.super }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+
+{% block content %}
+<section class="wrap section section--last">
+  <div class="gate">
+    <p class="mono-label">{% translate "Проверка" %}</p>
+    <h2 class="page-title">{% translate "Ссылка на видеоконференцию" %}</h2>
+    {% if link_title %}<p class="lede">{{ link_title }}</p>{% endif %}
+
+    <p class="gate__why">{% translate "Введите код с картинки. Ссылка откроется сразу, и следующие два часа код не понадобится." %}</p>
+
+    {% if error %}<p class="formerror">{{ error }}</p>{% endif %}
+
+    <form class="gate__form" method="post" novalidate>
+      {% csrf_token %}
+      <img class="gate__image" src="{% url 'captcha_image' %}" width="190" height="60"
+           alt="{% translate 'Код с картинки' %}">
+      <label class="visually-hidden" for="answer">{% translate "Код с картинки" %}</label>
+      <input class="field gate__input" id="answer" name="answer" required
+             autocomplete="off" autocapitalize="characters" spellcheck="false"
+             maxlength="8" inputmode="latin" autofocus>
+      <button class="btn btn--primary" type="submit">{% translate "Перейти по ссылке" %}</button>
+    </form>
+
+    <p class="note">{% translate "Проверка стоит затем, чтобы адрес конференции не собирали автоматически." %}</p>
+  </div>
+</section>
+{% endblock %}

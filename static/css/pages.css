@@ -50,16 +50,6 @@
   text-wrap: pretty;
 }
 
-.display {
-  margin: 16px 0 0;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(24px, 3.2vw, 40px);
-  line-height: 1.16;
-  letter-spacing: -0.015em;
-  text-wrap: pretty;
-}
-
 .plain {
   color: inherit;
 }
@@ -74,6 +64,35 @@
   color: #31363d;
   max-width: 44em;
   text-wrap: pretty;
+}
+
+/* Аннотация целиком. Слишком длинную скрипт подрезает и вешает кнопку —
+   класс ставится из JavaScript, чтобы без него текст остался полным. */
+.longtext--clipped {
+  position: relative;
+  max-height: 260px;
+  overflow: hidden;
+}
+.longtext--clipped::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 72px;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+  pointer-events: none;
+}
+.longtext__toggle {
+  margin-top: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid currentColor;
 }
 
 .rule {
@@ -107,7 +126,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Главная: «Хроника» --------------------------------------------------- */
+/* --- Главная -------------------------------------------------------------- */
 
 .kicker {
   margin: 0;
@@ -135,35 +154,6 @@
   50% {
     opacity: 0.25;
   }
-}
-
-.chronicle {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  gap: clamp(24px, 4vw, 56px);
-  align-items: start;
-}
-.chronicle__aside {
-  max-width: 22em;
-}
-.chronicle__day {
-  margin: 18px 0 0;
-  font-family: var(--font-serif);
-  font-size: clamp(56px, 9vw, 104px);
-  line-height: 0.86;
-  letter-spacing: -0.04em;
-  font-weight: 300;
-}
-.chronicle__month {
-  margin: 10px 0 0;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
-.chronicle__main {
-  min-width: 0;
 }
 
 .deflist {
@@ -623,4 +613,35 @@
 .nav__cta {
   flex: none;
   margin-block: 9px;
+}
+
+/* --- Шлюз внешних ссылок --------------------------------------------------- */
+
+.gate {
+  max-width: 34em;
+}
+.gate__why {
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+.gate__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+.gate__image {
+  display: block;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--surface-raised);
+}
+.gate__input {
+  width: 9em;
+  font-family: var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }

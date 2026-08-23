@@ -57,7 +57,7 @@
     {{ form.consent_pd }}
     <span>
       {% url 'seminars:privacy' as privacy_url %}
-      {% blocktranslate with href=policy_url|default:privacy_url %}Я согласен на <a href="{{ href }}" target="_blank" rel="noopener">обработку персональных данных</a> в целях организации участия в семинаре и оформления пропуска.{% endblocktranslate %}
+      {% blocktranslate with href=privacy_url %}Я согласен на <a href="{{ href }}" target="_blank" rel="noopener">обработку персональных данных</a> в целях организации участия в семинаре и оформления пропуска.{% endblocktranslate %}
     </span>
   </label>
   {% if form.consent_pd.errors %}

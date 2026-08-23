@@ -7,14 +7,14 @@
 {% block panel_body %}
 {% include "staffpanel/_errors.html" %}
 
-{% if not form.instance.privacy_policy_text %}
+{% if not form.instance.privacy_policy_file %}
   <div class="preview-note">
-    <p><strong>{% translate "Текст согласия на обработку персональных данных не заполнен." %}</strong></p>
-    <p>{% translate "Пока поле пусто, страница «Обработка персональных данных» сообщает посетителям, что формулировка не утверждена. До публичного запуска текст нужно согласовать и вставить сюда." %}</p>
+    <p><strong>{% translate "Документ согласия на обработку персональных данных не загружен." %}</strong></p>
+    <p>{% translate "Пока файла нет, страница «Обработка персональных данных» сообщает посетителям, что формулировка не утверждена. До публичного запуска утверждённый PDF нужно загрузить сюда." %}</p>
   </div>
 {% endif %}
 
-<form class="adminform" method="post" novalidate>
+<form class="adminform" method="post" enctype="multipart/form-data" novalidate>
   {% csrf_token %}
 
   <fieldset class="fset">
@@ -41,12 +41,17 @@
     {% include "staffpanel/_field.html" with field=form.notify_on_registration %}
     {% include "staffpanel/_field.html" with field=form.notify_email %}
     {% include "staffpanel/_field.html" with field=form.retention_months %}
+    {% include "staffpanel/_field.html" with field=form.online_link_captcha %}
   </fieldset>
 
   <fieldset class="fset">
     <legend class="fset__legend">{% translate "Персональные данные" %}</legend>
-    {% include "staffpanel/_field.html" with field=form.privacy_policy_text %}
-    {% include "staffpanel/_field.html" with field=form.privacy_policy_url %}
+    {% include "staffpanel/_field.html" with field=form.privacy_policy_file %}
+    {% if form.instance.privacy_policy_file %}
+      <p class="fset__hint">
+        <a href="{% url 'seminars:privacy' %}" target="_blank" rel="noopener">{% translate "Открыть документ, как его видит посетитель" %}</a>
+      </p>
+    {% endif %}
   </fieldset>
 
   <details class="lang-extra">

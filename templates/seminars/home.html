@@ -10,71 +10,16 @@
 
 {% block content %}
 
-{% if upcoming %}
 <section class="wrap section">
-  <div class="chronicle">
-    <div class="chronicle__aside">
-      <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>{% translate "Ближайшее заседание" %}</p>
-      <p class="chronicle__day">{{ upcoming.date|date:"j" }}</p>
-      {# E, а не F: под числом нужен родительный падеж — «сентября», не «Сентябрь». #}
-      <p class="chronicle__month">{{ upcoming.date|date:"E Y" }}</p>
-      <hr class="rule">
-      <dl class="deflist">
-        <dt>{% translate "Время" %}</dt>
-        <dd class="tnum">{{ upcoming.start_time|time:"H:i" }} MSK</dd>
-        <dt>{% translate "Место" %}</dt>
-        <dd>{{ upcoming|tr:"place" }}</dd>
-        <dt>{% translate "Формат" %}</dt>
-        <dd>{{ upcoming.get_seminar_format_display }}</dd>
-      </dl>
-    </div>
+  <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>{% translate "Ближайшее заседание" %}</p>
 
-    <div class="chronicle__main">
-      {# Собственной темы у заседания нет: заголовками идут сами доклады. #}
-      {% for talk in upcoming.talks.all %}
-        <h2 class="display"><a class="plain" href="{{ upcoming.get_absolute_url }}">{{ talk|tr:"title" }}</a></h2>
-
-        {% for speaker in talk.ordered_speakers %}
-          <div class="person">
-            <p class="person__name">{{ speaker|tr:"full_name" }}</p>
-            <p class="person__aff">{{ speaker|tr:"affiliation" }}</p>
-          </div>
-        {% endfor %}
-
-        {% if talk|tr:"abstract" %}
-          <p class="lede">{{ talk|tr:"abstract" }}</p>
-        {% endif %}
-      {% endfor %}
-
-      {% if upcoming|tr:"abstract" %}
-        <p class="lede">{{ upcoming|tr:"abstract" }}</p>
-      {% endif %}
-
-      <div class="actions">
-        {% if upcoming.registration_open %}
-          <a class="btn btn--primary" data-open-register
-             href="{% url 'registrations:register' upcoming.slug %}">
-            {% if upcoming.pass_required %}{% translate "Записаться и заказать пропуск" %}{% else %}{% translate "Записаться" %}{% endif %}
-          </a>
-        {% else %}
-          <p class="note">{% translate "Приём заявок на это заседание закрыт." %}</p>
-        {% endif %}
-      </div>
-
-      {% if upcoming.registration_open %}
-        <p class="note note--mono">
-          {% blocktranslate with deadline=upcoming.registration_deadline|date:"j E, H:i" %}Заявка на пропуск — до {{ deadline }}{% endblocktranslate %}
-        </p>
-      {% endif %}
-    </div>
-  </div>
+  {% if upcoming %}
+    {# Тот же блок, что и на странице заседания: заказчику этот вид ближе. #}
+    {% include "seminars/_seminar.html" with seminar=upcoming linked=True %}
+  {% else %}
+    <p class="lede">{% translate "Дата следующего заседания уточняется. Следите за объявлениями." %}</p>
+  {% endif %}
 </section>
-{% else %}
-<section class="wrap section">
-  <p class="kicker">{% translate "Ближайшее заседание" %}</p>
-  <p class="lede">{% translate "Дата следующего заседания уточняется. Следите за объявлениями." %}</p>
-</section>
-{% endif %}
 
 {% if recent %}
 <section class="wrap section section--last">
@@ -84,15 +29,17 @@
   </div>
   <ul class="minilist">
     {% for seminar in recent %}
-      <li>
-        <a class="minilist__link" href="{{ seminar.get_absolute_url }}">
-          <span class="minilist__date">{{ seminar.date|date:"d.m.Y" }}</span>
-          <span>
-            <span class="minilist__title">{{ seminar.lead_talk|tr:"title" }}</span>
-            <span class="minilist__who">{% for talk in seminar.talks.all %}{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
-          </span>
-        </a>
-      </li>
+      {% for talk in seminar.talks.all %}
+        <li>
+          <a class="minilist__link" href="{{ seminar.get_absolute_url }}">
+            <span class="minilist__date">{{ seminar.date|date:"d.m.Y" }}</span>
+            <span>
+              <span class="minilist__title">{{ talk|tr:"title" }}</span>
+              <span class="minilist__who">{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
+            </span>
+          </a>
+        </li>
+      {% endfor %}
     {% endfor %}
   </ul>
 </section>

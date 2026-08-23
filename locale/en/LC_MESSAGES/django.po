@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SRAofRAS seminars\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-22 19:07+0300\n"
+"POT-Creation-Date: 2026-08-22 23:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -17,71 +17,77 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: apps/core/models.py:26
+#: apps/core/models.py:27
 msgid "руководитель"
 msgstr "chair"
 
-#: apps/core/models.py:28
+#: apps/core/models.py:29
 msgid "звание руководителя"
 msgstr "chair’s title"
 
-#: apps/core/models.py:31
+#: apps/core/models.py:32
 msgid "секретарь"
 msgstr "secretary"
 
-#: apps/core/models.py:33
+#: apps/core/models.py:34
 msgid "звание секретаря"
 msgstr "secretary’s title"
 
-#: apps/core/models.py:36
+#: apps/core/models.py:37
 msgid "почта семинара"
 msgstr "seminar email"
 
-#: apps/core/models.py:37 apps/seminars/models.py:76
+#: apps/core/models.py:38 apps/seminars/models.py:76
 msgid "адрес"
 msgstr "address"
 
-#: apps/core/models.py:43
+#: apps/core/models.py:44
 msgid "закрывать заявки за N часов до начала"
 msgstr "close registration N hours before the start"
 
-#: apps/core/models.py:46
+#: apps/core/models.py:47
 msgid "письмо о каждой заявке"
 msgstr "email on every registration"
 
-#: apps/core/models.py:47
+#: apps/core/models.py:48
 msgid "куда слать уведомления"
 msgstr "notification recipient"
 
-#: apps/core/models.py:50
-msgid "внешняя ссылка на политику обработки ПД"
-msgstr "external link to the personal data policy"
-
-#: apps/core/models.py:54
-msgid "Если заполнено, используется вместо страницы на сайте."
-msgstr "If filled in, this is used instead of the page on the site."
-
-#: apps/core/models.py:57
-msgid "текст согласия на обработку ПД"
-msgstr "personal data consent text"
+#: apps/core/models.py:55
+msgid "документ согласия на обработку ПД"
+msgstr "personal data consent document"
 
 #: apps/core/models.py:60
-msgid "Согласовывается заказчиком. Пока пусто, на странице стоит заглушка."
+msgid ""
+"PDF. Открывается по ссылке «Обработка персональных данных» в подвале и в "
+"форме записи. Пока файла нет, на странице стоит заглушка."
 msgstr ""
-"To be approved by the client. While it is empty, the page shows a "
-"placeholder."
+"PDF. Opens from the “Personal data processing” link in the footer and in the "
+"registration form. While there is no file, the page shows a placeholder."
 
-#: apps/core/models.py:64
+#: apps/core/models.py:66
+msgid "проверять посетителя перед показом ссылки на трансляцию"
+msgstr "verify the visitor before showing the broadcast link"
+
+#: apps/core/models.py:69
+msgid ""
+"Ссылка на видеоконференцию отдаётся после ввода кода с картинки. Пройденная "
+"проверка помнится два часа."
+msgstr ""
+"The video conference link is given after the code from the image is entered. "
+"A passed check is remembered for two hours."
+
+#: apps/core/models.py:75
 msgid "хранить заявки, месяцев после заседания"
 msgstr "keep registrations, months after the meeting"
 
-#: apps/core/models.py:66
+#: apps/core/models.py:77
 msgid "По истечении срока заявки удаляет команда purge_registrations."
 msgstr ""
 "Once the term expires, registrations are removed by the purge_registrations "
 "command."
 
-#: apps/core/models.py:72 apps/core/models.py:73
+#: apps/core/models.py:83 apps/core/models.py:84
 msgid "настройки сайта"
 msgstr "site settings"
 
@@ -166,7 +172,6 @@ msgid "Укажите фамилию, имя и отчество."
 msgstr "Please enter your full name."
 
 #: apps/registrations/forms.py:130 apps/registrations/views.py:86
-#: templates/seminars/home.html:60
 msgid "Приём заявок на это заседание закрыт."
 msgstr "Registration for this meeting is closed."
 
@@ -174,7 +179,7 @@ msgstr "Registration for this meeting is closed."
 msgid "Очно"
 msgstr "In person"
 
-#: apps/registrations/models.py:34 templates/seminars/archive.html:51
+#: apps/registrations/models.py:34 templates/seminars/archive.html:53
 msgid "Онлайн"
 msgstr "Online"
 
@@ -298,7 +303,7 @@ msgstr "venue"
 msgid "формат"
 msgstr "format"
 
-#: apps/seminars/models.py:93
+#: apps/seminars/models.py:93 templates/seminars/_seminar.html:81
 msgid "ссылка на видеоконференцию"
 msgstr "video conference link"
 
@@ -385,6 +390,14 @@ msgstr "material"
 #: apps/seminars/models.py:307
 msgid "материалы"
 msgstr "materials"
+
+#: apps/seminars/views.py:18
+msgid "Код с картинки не совпал. Попробуйте ещё раз."
+msgstr "The code from the image did not match. Please try again."
+
+#: apps/seminars/views.py:19
+msgid "Слишком много попыток. Подождите немного и повторите."
+msgstr "Too many attempts. Wait a little and try again."
 
 #: apps/staffpanel/export.py:17 templates/registrations/_success.html:21
 #: templates/registrations/email/admin_notice.txt:4
@@ -478,15 +491,15 @@ msgstr "The meeting is now hidden from visitors."
 msgid "Заседание опубликовано."
 msgstr "The meeting has been published."
 
-#: apps/staffpanel/views.py:275
+#: apps/staffpanel/views.py:277
 msgid "Неизвестный статус пропуска."
 msgstr "Unknown pass status."
 
-#: apps/staffpanel/views.py:279
+#: apps/staffpanel/views.py:281
 msgid "Статус пропуска обновлён."
 msgstr "Pass status updated."
 
-#: apps/staffpanel/views.py:313
+#: apps/staffpanel/views.py:315
 msgid "Настройки сохранены."
 msgstr "Settings saved."
 
@@ -530,11 +543,11 @@ msgstr ""
 
 #: templates/base.html:7
 msgid ""
-"Научный семинар Института космических исследований РАН: ближайшее заседание, "
-"архив докладов, порядок посещения."
+"Научный семинар Института космических исследований РАН: ближайшее заседание "
+"и архив докладов."
 msgstr ""
 "Scientific seminar of the Space Research Institute of the Russian Academy of "
-"Sciences: the next meeting, the archive of talks and how to attend."
+"Sciences: the next meeting and the archive of talks."
 
 #: templates/base.html:20 templates/base.html:74
 msgid "Институт космических исследований Российской академии наук"
@@ -606,11 +619,11 @@ msgstr "contacts"
 msgid "Обработка персональных данных"
 msgstr "Personal data processing"
 
-#: templates/core/privacy.html:18
+#: templates/core/privacy.html:16
 msgid "Текст согласия ещё не утверждён."
 msgstr "The consent wording has not been approved yet."
 
-#: templates/core/privacy.html:19
+#: templates/core/privacy.html:17
 msgid ""
 "Организаторы семинара готовят формулировку. До её утверждения страница носит "
 "служебный характер и не является публичной офертой или согласием в смысле "
@@ -620,28 +633,28 @@ msgstr ""
 "page is provisional and constitutes neither a public offer nor consent "
 "within the meaning of Russian Federal Law 152-FZ."
 
-#: templates/core/privacy.html:22
+#: templates/core/privacy.html:21
 msgid "Планируемый состав обрабатываемых данных:"
 msgstr "The data planned to be processed:"
 
-#: templates/core/privacy.html:24
+#: templates/core/privacy.html:23
 msgid "ФИО — для оформления пропуска и списка участников;"
 msgstr "full name — to issue the pass and compile the list of participants;"
 
-#: templates/core/privacy.html:25
+#: templates/core/privacy.html:24
 msgid "организация — для оформления пропуска;"
 msgstr "organization — to issue the pass;"
 
-#: templates/core/privacy.html:26
+#: templates/core/privacy.html:25
 msgid "должность — опционально, для списка участников;"
 msgstr "position — optional, for the list of participants;"
 
-#: templates/core/privacy.html:27
+#: templates/core/privacy.html:26
 msgid ""
 "адрес электронной почты — для подтверждения и ссылки на видеоконференцию."
 msgstr "email address — for the confirmation and the video conference link."
 
-#: templates/core/privacy.html:29
+#: templates/core/privacy.html:28
 #, python-format
 msgid ""
 "Заявки хранятся %(months)s месяцев после даты заседания, затем удаляются "
@@ -650,7 +663,7 @@ msgstr ""
 "Registrations are kept for %(months)s months after the date of the meeting "
 "and are then deleted automatically."
 
-#: templates/core/privacy.html:30
+#: templates/core/privacy.html:29
 msgid ""
 "ФИО и организация передаются в бюро пропусков ИКИ РАН для оформления "
 "разового пропуска."
@@ -658,7 +671,7 @@ msgstr ""
 "Your full name and organization are passed to the IKI RAS pass office to "
 "issue a single-entry pass."
 
-#: templates/core/privacy.html:31
+#: templates/core/privacy.html:30
 #, python-format
 msgid "Вопросы и отзыв согласия — на %(email)s."
 msgstr "Questions and withdrawal of consent: %(email)s."
@@ -772,18 +785,20 @@ msgstr ""
 "Your registration for the IKI RAS scientific seminar has been accepted."
 
 #: templates/registrations/email/confirmation.txt:5
-#: templates/seminars/detail.html:40 templates/staffpanel/seminar_list.html:40
+#: templates/seminars/_seminar.html:46
+#: templates/staffpanel/seminar_list.html:40
 msgid "Доклад"
 msgstr "Talk"
 
 #: templates/registrations/email/confirmation.txt:6
-#: templates/seminars/detail.html:56 templates/staffpanel/seminar_list.html:29
+#: templates/seminars/_seminar.html:68
+#: templates/staffpanel/seminar_list.html:29
 #: templates/staffpanel/seminar_list.html:39
 msgid "Дата"
 msgstr "Date"
 
 #: templates/registrations/email/confirmation.txt:7
-#: templates/seminars/detail.html:60 templates/seminars/home.html:25
+#: templates/seminars/_seminar.html:72
 msgid "Место"
 msgstr "Venue"
 
@@ -810,6 +825,76 @@ msgstr "Registration"
 #: templates/registrations/success.html:11
 msgid "К заседанию"
 msgstr "Back to the meeting"
+
+#: templates/seminars/_seminar.html:15
+msgid "заседание прошло"
+msgstr "meeting has taken place"
+
+#: templates/seminars/_seminar.html:19
+#, python-format
+msgid "Заседание %(day)s"
+msgstr "Meeting on %(day)s"
+
+#: templates/seminars/_seminar.html:27 templates/seminars/_seminar.html:50
+msgid "Показать аннотацию целиком"
+msgstr "Show the whole abstract"
+
+#: templates/seminars/_seminar.html:28 templates/seminars/_seminar.html:51
+msgid "Свернуть"
+msgstr "Collapse"
+
+#: templates/seminars/_seminar.html:59
+msgid "Доклады этого заседания ещё не объявлены."
+msgstr "The talks of this meeting have not been announced yet."
+
+#: templates/seminars/_seminar.html:66
+#: templates/staffpanel/seminar_form.html:21
+msgid "Когда и где"
+msgstr "When and where"
+
+#: templates/seminars/_seminar.html:70
+msgid "Время"
+msgstr "Time"
+
+#: templates/seminars/_seminar.html:74
+#: templates/staffpanel/registrations.html:58
+#: templates/staffpanel/registrations.html:70
+msgid "Формат"
+msgstr "Format"
+
+#: templates/seminars/_seminar.html:77
+msgid "Трансляция"
+msgstr "Broadcast"
+
+#: templates/seminars/_seminar.html:88
+msgid "Записаться и заказать пропуск"
+msgstr "Register and request a pass"
+
+#: templates/seminars/_seminar.html:88 templates/seminars/home.html:7
+msgid "Записаться"
+msgstr "Register"
+
+#: templates/seminars/_seminar.html:90
+#, python-format
+msgid "Приём заявок — до %(deadline)s"
+msgstr "Registration is open until %(deadline)s"
+
+#: templates/seminars/_seminar.html:92
+msgid "Приём заявок закрыт."
+msgstr "Registration is closed."
+
+#: templates/seminars/_seminar.html:98
+#: templates/staffpanel/seminar_form.html:67
+msgid "Материалы"
+msgstr "Materials"
+
+#: templates/seminars/_seminar.html:101
+msgid "открыть"
+msgstr "open"
+
+#: templates/seminars/_seminar.html:109
+msgid "Другие заседания"
+msgstr "Other meetings"
 
 #: templates/seminars/about.html:12
 msgid "Руководитель"
@@ -878,37 +963,32 @@ msgstr "All years"
 msgid "Найти"
 msgstr "Search"
 
-#: templates/seminars/archive.html:46
-#, python-format
-msgid "+ ещё доклад: %(title)s"
-msgstr "+ one more talk: %(title)s"
-
-#: templates/seminars/archive.html:59
+#: templates/seminars/archive.html:62
 msgid "Страницы архива"
 msgstr "Archive pages"
 
-#: templates/seminars/archive.html:61
+#: templates/seminars/archive.html:64
 msgid "Назад"
 msgstr "Back"
 
-#: templates/seminars/archive.html:63
+#: templates/seminars/archive.html:66
 #, python-format
 msgid "Страница %(n)s из %(total)s"
 msgstr "Page %(n)s of %(total)s"
 
-#: templates/seminars/archive.html:65
+#: templates/seminars/archive.html:68
 msgid "Далее"
 msgstr "Next"
 
-#: templates/seminars/archive.html:72
+#: templates/seminars/archive.html:75
 msgid "Ничего не найдено"
 msgstr "Nothing found"
 
-#: templates/seminars/archive.html:73
+#: templates/seminars/archive.html:76
 msgid "Измените запрос или сбросьте фильтры."
 msgstr "Change the query or reset the filters."
 
-#: templates/seminars/archive.html:75
+#: templates/seminars/archive.html:78
 msgid "Сбросить фильтры"
 msgstr "Reset filters"
 
@@ -920,80 +1000,55 @@ msgstr "Back to the archive"
 msgid "Предпросмотр: заседание не опубликовано и посетителям не видно."
 msgstr "Preview: this meeting is not published and is not visible to visitors."
 
-#: templates/seminars/detail.html:19
-msgid "заседание прошло"
-msgstr "meeting has taken place"
-
-#: templates/seminars/detail.html:22
-#, python-format
-msgid "Заседание %(day)s"
-msgstr "Meeting on %(day)s"
-
-#: templates/seminars/detail.html:54 templates/staffpanel/seminar_form.html:21
-msgid "Когда и где"
-msgstr "When and where"
-
-#: templates/seminars/detail.html:58 templates/seminars/home.html:23
-msgid "Время"
-msgstr "Time"
-
-#: templates/seminars/detail.html:62 templates/seminars/home.html:27
-#: templates/staffpanel/registrations.html:58
-#: templates/staffpanel/registrations.html:70
-msgid "Формат"
-msgstr "Format"
-
-#: templates/seminars/detail.html:69 templates/seminars/home.html:57
-msgid "Записаться и заказать пропуск"
-msgstr "Register and request a pass"
-
-#: templates/seminars/detail.html:69 templates/seminars/home.html:7
-#: templates/seminars/home.html:57
-msgid "Записаться"
-msgstr "Register"
-
-#: templates/seminars/detail.html:71
-#, python-format
-msgid "Приём заявок — до %(deadline)s"
-msgstr "Registration is open until %(deadline)s"
-
-#: templates/seminars/detail.html:73
-msgid "Приём заявок закрыт."
-msgstr "Registration is closed."
-
-#: templates/seminars/detail.html:79 templates/staffpanel/seminar_form.html:67
-msgid "Материалы"
-msgstr "Materials"
-
-#: templates/seminars/detail.html:82
-msgid "открыть"
-msgstr "open"
-
-#: templates/seminars/detail.html:90
-msgid "Другие заседания"
-msgstr "Other meetings"
-
-#: templates/seminars/home.html:17 templates/seminars/home.html:74
+#: templates/seminars/home.html:14
 msgid "Ближайшее заседание"
 msgstr "Next meeting"
 
-#: templates/seminars/home.html:66
-#, python-format
-msgid "Заявка на пропуск — до %(deadline)s"
-msgstr "Pass requests are open until %(deadline)s"
-
-#: templates/seminars/home.html:75
+#: templates/seminars/home.html:20
 msgid "Дата следующего заседания уточняется. Следите за объявлениями."
 msgstr ""
 "The date of the next meeting is yet to be confirmed. Watch for announcements."
 
-#: templates/seminars/home.html:82
+#: templates/seminars/home.html:27
 msgid "Из архива"
 msgstr "From the archive"
 
-#: templates/seminars/home.html:83
+#: templates/seminars/home.html:28
 msgid "Все прошедшие заседания"
 msgstr "All past meetings"
+
+#: templates/seminars/link_challenge.html:4
+#: templates/seminars/link_challenge.html:11
+msgid "Ссылка на видеоконференцию"
+msgstr "Video conference link"
+
+#: templates/seminars/link_challenge.html:10
+msgid "Проверка"
+msgstr "Check"
+
+#: templates/seminars/link_challenge.html:14
+msgid ""
+"Введите код с картинки. Ссылка откроется сразу, и следующие два часа код не "
+"понадобится."
+msgstr ""
+"Enter the code from the image. The link will open right away, and for the "
+"next two hours the code will not be needed."
+
+#: templates/seminars/link_challenge.html:21
+#: templates/seminars/link_challenge.html:22
+msgid "Код с картинки"
+msgstr "Code from the image"
+
+#: templates/seminars/link_challenge.html:26
+msgid "Перейти по ссылке"
+msgstr "Open the link"
+
+#: templates/seminars/link_challenge.html:29
+msgid ""
+"Проверка стоит затем, чтобы адрес конференции не собирали автоматически."
+msgstr ""
+"The check is here so that the conference address is not collected "
+"automatically."
 
 #: templates/staffpanel/_base_panel.html:8
 msgid "Панель администратора"
@@ -1149,7 +1204,7 @@ msgid "Публикация и приём заявок"
 msgstr "Publication and registration"
 
 #: templates/staffpanel/seminar_form.html:106
-#: templates/staffpanel/settings.html:62
+#: templates/staffpanel/settings.html:67
 msgid "Сохранить"
 msgstr "Save"
 
@@ -1217,18 +1272,18 @@ msgid "Настройки сайта"
 msgstr "Site settings"
 
 #: templates/staffpanel/settings.html:12
-msgid "Текст согласия на обработку персональных данных не заполнен."
-msgstr "The personal data consent text is empty."
+msgid "Документ согласия на обработку персональных данных не загружен."
+msgstr "The personal data consent document has not been uploaded."
 
 #: templates/staffpanel/settings.html:13
 msgid ""
-"Пока поле пусто, страница «Обработка персональных данных» сообщает "
-"посетителям, что формулировка не утверждена. До публичного запуска текст "
-"нужно согласовать и вставить сюда."
+"Пока файла нет, страница «Обработка персональных данных» сообщает "
+"посетителям, что формулировка не утверждена. До публичного запуска "
+"утверждённый PDF нужно загрузить сюда."
 msgstr ""
-"While this field is empty, the “Personal data processing” page tells "
-"visitors that the wording has not been approved. The text has to be agreed "
-"and pasted here before the public launch."
+"While there is no file, the “Personal data processing” page tells visitors "
+"that the wording has not been approved. The approved PDF must be uploaded "
+"here before the public launch."
 
 #: templates/staffpanel/settings.html:21
 msgid "Организаторы"
@@ -1238,10 +1293,14 @@ msgstr "Organisers"
 msgid "Заявки и уведомления"
 msgstr "Registrations and notifications"
 
-#: templates/staffpanel/settings.html:47
+#: templates/staffpanel/settings.html:48
 msgid "Персональные данные"
 msgstr "Personal data"
 
-#: templates/staffpanel/settings.html:53
+#: templates/staffpanel/settings.html:52
+msgid "Открыть документ, как его видит посетитель"
+msgstr "Open the document as a visitor sees it"
+
+#: templates/staffpanel/settings.html:58
 msgid "Английские версии"
 msgstr "English versions"

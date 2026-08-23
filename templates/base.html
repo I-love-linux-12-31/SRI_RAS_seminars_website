@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% translate "Научный семинар ИКИ РАН" %}{% endblock %}</title>
-  <meta name="description" content="{% block description %}{% translate "Научный семинар Института космических исследований РАН: ближайшее заседание, архив докладов, порядок посещения." %}{% endblock %}">
+  <meta name="description" content="{% block description %}{% translate "Научный семинар Института космических исследований РАН: ближайшее заседание и архив докладов." %}{% endblock %}">
   <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
@@ -89,6 +89,7 @@
 
 <script src="{% static 'js/htmx.min.js' %}" defer></script>
 <script src="{% static 'js/modal.js' %}" defer></script>
+<script src="{% static 'js/longtext.js' %}" defer></script>
 {% if user.is_staff %}<script src="{% static 'js/inlines.js' %}" defer></script>{% endif %}
 
 </body>

@@ -5,13 +5,14 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 
-from apps.core.views import healthz, robots_txt
+from apps.core.views import captcha_image, healthz, robots_txt
 from apps.seminars.sitemaps import sitemaps
 
 # Вне i18n_patterns: служебные адреса не должны существовать в двух языковых копиях.
 urlpatterns = [
     path("healthz", healthz, name="healthz"),
     path("robots.txt", robots_txt, name="robots"),
+    path("captcha.png", captcha_image, name="captcha_image"),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="sitemap"),
     # Аварийный доступ суперпользователя. Основная панель — /manage/.
     path("django-admin/", admin.site.urls),

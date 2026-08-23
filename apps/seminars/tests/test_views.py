@@ -107,6 +107,49 @@ def test_year_filter():
     assert "Недавний доклад" not in content
 
 
+def test_two_talks_on_one_day_get_a_block_each():
+    """Общей темы у заседания нет: доклады не должны склеиваться в одну строку."""
+    seminar = make_seminar(timezone.localdate() - timedelta(days=1))
+    add_talk(seminar, "Корональная сейсмология", [("Рудерман Михаил", "ИКИ РАН")])
+    add_talk(seminar, "Плазменно-пылевая система", [("Резниченко Юлия", "ИКИ РАН")])
+
+    content = get(reverse("seminars:archive"))
+
+    assert content.count('class="row"') == 2
+    assert "Корональная сейсмология" in content
+    assert "Плазменно-пылевая система" in content
+    # Докладчик стоит при своём докладе, а не в общем списке на двоих.
+    first = content.index("Корональная сейсмология")
+    second = content.index("Плазменно-пылевая система")
+    assert first < content.index("Рудерман Михаил") < second
+    assert second < content.index("Резниченко Юлия")
+
+
+def test_home_shows_the_upcoming_seminar_like_its_own_page():
+    """Заказчику вид страницы заседания понравился больше — блок общий."""
+    upcoming = make_seminar(timezone.localdate() + timedelta(days=3))
+    add_talk(upcoming, "Ближайший доклад", [("Смирнов Андрей", "ИКИ РАН")])
+
+    home = get(reverse("seminars:home"))
+    page = get(upcoming.get_absolute_url())
+
+    for marker in ('class="detail"', 'class="talk"', "Когда и где", "Ближайший доклад"):
+        assert marker in home, marker
+        assert marker in page, marker
+
+
+def test_long_abstract_is_rendered_whole():
+    """Без JavaScript аннотация видна целиком; подрезает её только скрипт."""
+    text = "Очень длинная аннотация. " * 60
+    seminar = make_seminar(timezone.localdate() + timedelta(days=3), abstract_ru=text)
+    add_talk(seminar, "Доклад", [("Иванов И. И.", "ИКИ РАН")])
+
+    content = get(seminar.get_absolute_url())
+
+    assert text.strip() in content
+    assert "data-longtext" in content, "скрипту нужна зацепка, чтобы повесить кнопку"
+
+
 def test_archive_hides_upcoming():
     future = make_seminar(timezone.localdate() + timedelta(days=5))
     add_talk(future, "Будущий доклад", [("Иванов И. И.", "ИКИ РАН")])
@@ -132,10 +175,20 @@ def test_archive_does_not_scale_queries_with_rows(client, django_assert_max_num_
         client.get(reverse("seminars:archive"))
 
 
-def test_home_does_not_load_materials(client, django_assert_max_num_queries):
-    """Главная материалы не показывает, поэтому и грузить их не должна."""
+def test_home_does_not_scale_queries_with_talks(client, django_assert_max_num_queries):
+    """Главная показывает ближайшее заседание целиком — с докладами и материалами.
+
+    Значит, и грузить их надо разом: иначе каждый доклад и каждый материал
+    стоил бы отдельного запроса.
+    """
+    from apps.seminars.models import Material
+
     upcoming = make_seminar(timezone.localdate() + timedelta(days=3), suffix="up")
-    add_talk(upcoming, "Ближайший доклад", [("Смирнов А. П.", "ИКИ РАН")])
+    for i in range(4):
+        talk = add_talk(upcoming, f"Ближайший доклад {i}", [(f"Смирнов {i}", "ИКИ РАН")])
+        Material.objects.create(
+            seminar=upcoming, talk=talk, kind=Material.Kind.VIDEO, url=f"https://e.org/{i}"
+        )
     for i in range(5):
         past = make_seminar(timezone.localdate() - timedelta(days=i + 1), suffix=f"p{i}")
         add_talk(past, f"Доклад {i}", [(f"Докладчик {i}", "ИКИ РАН")])
