@@ -7,7 +7,8 @@
 (function () {
   "use strict";
 
-  var LIMIT = 260;
+  // ~10 строк при базовом кегле 20px: короткую аннотацию подрезать незачем.
+  var LIMIT = 340;
 
   function setup(node) {
     if (node.scrollHeight <= LIMIT + 40) return;

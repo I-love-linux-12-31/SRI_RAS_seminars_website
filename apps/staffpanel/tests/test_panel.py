@@ -158,12 +158,33 @@ def seminar_payload(**overrides) -> dict:
         "talks-0-title_en": "",
         "talks-0-abstract_ru": "",
         "talks-0-speakers_raw": "Смирнов Андрей Петрович — д. ф.-м. н., ИКИ РАН",
-        "materials-TOTAL_FORMS": "0",
-        "materials-INITIAL_FORMS": "0",
-        "materials-MIN_NUM_FORMS": "0",
-        "materials-MAX_NUM_FORMS": "1000",
     }
     return data | overrides
+
+
+def saved_talk_payload(talk, **overrides) -> dict:
+    """Правка заседания с одним уже сохранённым докладом."""
+    return seminar_payload(
+        **{
+            "talks-INITIAL_FORMS": "1",
+            "talks-0-id": talk.pk,
+            "talks-0-title_ru": talk.title_ru,
+            "talks-0-speakers_raw": "Иванов Иван Иванович — ИКИ РАН",
+        }
+        | overrides
+    )
+
+
+def material_payload(talk, **fields) -> dict:
+    """Формсет материалов идёт своей группой на каждый доклад."""
+    prefix = f"materials-{talk.pk}"
+    data = {
+        f"{prefix}-TOTAL_FORMS": "1",
+        f"{prefix}-INITIAL_FORMS": "0",
+        f"{prefix}-MIN_NUM_FORMS": "0",
+        f"{prefix}-MAX_NUM_FORMS": "1000",
+    }
+    return data | {f"{prefix}-0-{name}": value for name, value in fields.items()}
 
 
 def test_create_seminar_with_talk_and_speaker(as_secretary):
@@ -272,58 +293,86 @@ def test_invalid_form_lists_problems_above_the_form(as_secretary):
 
 def test_summary_collects_errors_from_talks_and_materials(as_secretary):
     """Ошибка во вложенной форме иначе видна только при прокрутке до неё."""
-    payload = seminar_payload(
-        **{
-            "talks-0-speakers_raw": "АБ",
-            "materials-TOTAL_FORMS": "1",
-            "materials-0-kind": "slides",
-            "materials-0-title_ru": "Презентация",
-            "materials-0-url": "",
-        },
-    )
-
-    errors = as_secretary.post(reverse("staffpanel:seminar_create"), payload).context["errors"]
-
-    assert "Докладчики: Слишком короткое имя докладчика: «АБ»" in errors
-    assert "Ссылка: Обязательное поле." in errors
-
-
-def test_archive_material_with_a_file_does_not_demand_a_link(as_secretary):
-    """У перенесённого архива вместо ссылки лежит скачанный файл.
-
-    Требуй форма ссылку и от него — заседание со старого сайта перестало бы
-    сохраняться, пока секретарь не придумает, что вписать.
-    """
-    from django.core.files.base import ContentFile
-
-    from apps.seminars.models import Material
-
     seminar = make_seminar(timezone.localdate() + timedelta(days=5))
     talk = add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
-    material = Material(seminar=seminar, kind=Material.Kind.ABSTRACT)
-    material.file.save("annotation.pdf", ContentFile(b"%PDF-1.4"), save=True)
+    payload = saved_talk_payload(talk, **{"talks-0-speakers_raw": "АБ"})
+    payload |= material_payload(talk, kind="slides", title_ru="Презентация", url="")
 
     response = as_secretary.post(
-        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}),
-        seminar_payload(
-            **{
-                "talks-INITIAL_FORMS": "1",
-                "talks-0-id": talk.pk,
-                "talks-0-title_ru": talk.title_ru,
-                "talks-0-speakers_raw": "Иванов Иван Иванович — ИКИ РАН",
-                "materials-TOTAL_FORMS": "1",
-                "materials-INITIAL_FORMS": "1",
-                "materials-0-id": material.pk,
-                "materials-0-kind": material.kind,
-                "materials-0-title_ru": "",
-                "materials-0-url": "",
-            }
-        ),
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload
+    )
+
+    errors = response.context["errors"]
+    assert "Докладчики: Слишком короткое имя докладчика: «АБ»" in errors
+    assert "Приложите файл или укажите ссылку." in errors
+
+
+# --- Материалы доклада ----------------------------------------------------------
+
+
+def talk_with_seminar():
+    seminar = make_seminar(timezone.localdate() + timedelta(days=5))
+    return seminar, add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
+
+
+def test_material_is_attached_to_the_talk(as_secretary):
+    """Заказчик просил файлы у доклада, а не у заседания."""
+    from apps.seminars.models import Material
+
+    seminar, talk = talk_with_seminar()
+    payload = saved_talk_payload(talk)
+    payload |= material_payload(
+        talk,
+        kind=Material.Kind.SLIDES,
+        title_ru="Презентация",
+        file=SimpleUploadedFile("slides.pdf", b"%PDF-1.4"),
+        url="",
+    )
+
+    response = as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload
     )
 
     assert response.status_code == 302
-    material.refresh_from_db()
-    assert material.file, "файл из архива не должен пропасть при сохранении"
+    material = Material.objects.get()
+    assert material.talk_id == talk.pk
+    assert material.file.name.startswith("materials/")
+
+
+def test_material_can_be_a_link(as_secretary):
+    from apps.seminars.models import Material
+
+    seminar, talk = talk_with_seminar()
+    payload = saved_talk_payload(talk)
+    payload |= material_payload(
+        talk, kind=Material.Kind.VIDEO, title_ru="", url="https://example.org/video"
+    )
+
+    response = as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload
+    )
+
+    assert response.status_code == 302
+    assert Material.objects.get().url == "https://example.org/video"
+
+
+def test_new_seminar_has_nowhere_to_attach_materials_yet(as_secretary):
+    """Материал висит на докладе, а доклада у несохранённой формы ещё нет."""
+    content = as_secretary.get(reverse("staffpanel:seminar_create")).content.decode()
+
+    assert "materials-" not in content
+    assert "после сохранения" in content
+
+
+def test_material_form_appears_for_a_saved_talk(as_secretary):
+    seminar, talk = talk_with_seminar()
+
+    content = as_secretary.get(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk})
+    ).content.decode()
+
+    assert f'name="materials-{talk.pk}-0-file"' in content
+    assert f'name="materials-{talk.pk}-0-url"' in content
 
 
 def test_saved_form_has_no_summary(as_secretary):

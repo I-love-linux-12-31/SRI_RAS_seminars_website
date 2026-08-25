@@ -46,12 +46,19 @@
             <h3 class="talk__title">{{ talk|tr:"title" }}</h3>
             {% if talk|tr:"abstract" %}
               <div class="talk__abstract" data-longtext
-           data-more="{% translate 'Показать аннотацию целиком' %}"
-           data-less="{% translate 'Свернуть' %}">{{ talk|tr:"abstract"|linebreaks }}</div>
+                   data-more="{% translate 'Показать аннотацию целиком' %}"
+                   data-less="{% translate 'Свернуть' %}">{{ talk|tr:"abstract"|linebreaks }}</div>
             {% endif %}
-            {% for m in talk.materials.all %}
-              <a class="filelink" href="{{ m.href }}">{{ m.get_kind_display }}</a>
-            {% endfor %}
+            {% if talk.materials.all %}
+              <ul class="matlist">
+                {% for m in talk.materials.all %}
+                  <li>
+                    <span>{% firstof m|tr:"title" m.get_kind_display %}</span>
+                    <a href="{{ m.href }}">{% translate "открыть" %}</a>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
           </div>
         </article>
       {% empty %}
@@ -90,17 +97,6 @@
         <p class="note">{% translate "Приём заявок закрыт." %}</p>
       {% endif %}
     </div>
-
-    {% if seminar.materials.all %}
-      <div class="panel">
-        <p class="mono-label">{% translate "Материалы" %}</p>
-        <ul class="matlist">
-          {% for m in seminar.materials.all %}
-            <li><span>{{ m.get_kind_display }}</span><a href="{{ m.href }}">{% translate "открыть" %}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
 
     {% if related %}
       <div class="panel panel--plain">

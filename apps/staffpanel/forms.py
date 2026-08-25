@@ -10,11 +10,10 @@ from typing import ClassVar
 
 from django import forms
 from django.forms import BaseFormSet, inlineformset_factory
-from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import SiteSettings
-from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker
+from apps.seminars.models import Material, Seminar, Speaker, Talk, TalkSpeaker, slugify_ru
 
 SPEAKER_SEPARATOR = "—"
 
@@ -130,16 +129,19 @@ class SeminarForm(forms.ModelForm):
 
     @staticmethod
     def _build_slug(seminar: Seminar, label: str = "") -> str:
-        """Адрес заседания.
+        """Адрес заседания: дата и тема первого доклада.
 
-        Собственной темы у заседания больше нет, а доклады сохраняются уже
-        после него — поэтому из панели адрес получается по одной дате.
-        Импорт архива передаёт `label` (тему первого доклада) и оставляет
-        старые адреса такими же, какими они были на прошлом сайте.
+        Собственной темы у заседания нет, поэтому `label` — это тема доклада.
+        Русское название транслитерируется: без этого slugify() выбросил бы
+        кириллицу целиком и от адреса осталась бы одна дата.
+
+        Форма сохраняет заседание раньше докладов, поэтому в момент вызова из
+        `save()` темы ещё нет — адрес там получается по дате, а представление
+        пересобирает его сразу после сохранения докладов.
         """
         base = f"{seminar.date:%Y-%m-%d}"
         if label:
-            base = f"{base}-{slugify(label)[:120]}".rstrip("-")
+            base = f"{base}-{slugify_ru(label)[:120]}".rstrip("-")
         slug, n = base, 2
         while Seminar.objects.filter(slug=slug).exclude(pk=seminar.pk).exists():
             slug = f"{base}-{n}"
@@ -229,39 +231,41 @@ class TalkForm(forms.ModelForm):
 
 
 class MaterialForm(forms.ModelForm):
-    """Материал заседания — только ссылкой.
+    """Материал доклада: файлом, ссылкой или и тем и другим.
 
-    Прикреплять файлы из панели нельзя: это лишняя работа для секретаря, а
-    аннотация теперь набирается текстом прямо в докладе. Поле `file` в модели
-    осталось ради архива, перенесённого со старого сайта.
+    Материалы висят на докладе, а не на заседании: у заседания из внешнего
+    только ссылка на видеоконференцию.
     """
 
     class Meta:
         model = Material
-        fields: ClassVar[list[str]] = ["kind", "title_ru", "url"]
+        fields: ClassVar[list[str]] = ["kind", "title_ru", "file", "url"]
         widgets: ClassVar[dict] = {
             "title_ru": forms.TextInput(attrs={"class": "field"}),
             "url": forms.URLInput(attrs={"class": "field"}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Материал без ссылки — пустая строка в интерфейсе. Пустые добавочные
-        # строки формсет и так не проверяет, так что заполнять их не обяжет.
-        #
-        # Кроме перенесённого архива: там вместо ссылки лежит скачанный файл.
-        # Требуй мы ссылку и от него — заседание со старого сайта перестало бы
-        # сохраняться, пока секретарь не придумает, что вписать.
-        self.fields["url"].required = not self.instance.file
+    def clean(self):
+        cleaned = super().clean()
+        if not cleaned.get("file") and not cleaned.get("url"):
+            raise forms.ValidationError(_("Приложите файл или укажите ссылку."))
+        return cleaned
 
 
 TalkFormSet = inlineformset_factory(
     Seminar, Talk, form=TalkForm, extra=1, can_delete=True, min_num=0, validate_min=False
 )
 
-MaterialFormSet = inlineformset_factory(
-    Seminar, Material, form=MaterialForm, extra=1, can_delete=True, fk_name="seminar"
-)
+MaterialFormSet = inlineformset_factory(Talk, Material, form=MaterialForm, extra=1, can_delete=True)
+
+
+def material_prefix(talk: Talk) -> str:
+    """Свой префикс на доклад: формсеты материалов идут отдельными группами.
+
+    Вкладывать их внутрь формы доклада нельзя — скрипт добавления строк ищет
+    management_form в ближайшем fieldset и на вложенной группе брал бы чужой.
+    """
+    return f"materials-{talk.pk}"
 
 
 class SiteSettingsForm(forms.ModelForm):

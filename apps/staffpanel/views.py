@@ -15,7 +15,14 @@ from apps.registrations.models import Registration
 from apps.seminars.models import Seminar, TalkSpeaker
 
 from .export import registrations_csv, registrations_xlsx
-from .forms import MaterialFormSet, SeminarForm, SiteSettingsForm, TalkFormSet, error_summary
+from .forms import (
+    MaterialFormSet,
+    SeminarForm,
+    SiteSettingsForm,
+    TalkFormSet,
+    error_summary,
+    material_prefix,
+)
 
 
 def back_to(request, fallback: str) -> str:
@@ -103,8 +110,25 @@ class SeminarEditView(StaffRequiredMixin, View):
         return (
             SeminarForm(data, files, instance=seminar),
             TalkFormSet(data, files, instance=seminar, prefix="talks"),
-            MaterialFormSet(data, files, instance=seminar, prefix="materials"),
+            self.build_materials(seminar, data, files),
         )
+
+    @staticmethod
+    def build_materials(seminar: Seminar | None, data=None, files=None) -> list[tuple]:
+        """По формсету материалов на каждый сохранённый доклад.
+
+        Материалы принадлежат докладу, а доклада у несохранённой формы ещё нет
+        — как и раньше с фотографиями, поля появляются после первого
+        сохранения. Каждый формсет идёт своей группой со своим префиксом:
+        вложить их внутрь формы доклада мешает скрипт добавления строк, он
+        ищет management_form в ближайшем fieldset.
+        """
+        if seminar is None:
+            return []
+        return [
+            (talk, MaterialFormSet(data, files, instance=talk, prefix=material_prefix(talk)))
+            for talk in seminar.talks.all()
+        ]
 
     def render(self, request, seminar, form, talks, materials, status=200):
         context = {
@@ -112,9 +136,9 @@ class SeminarEditView(StaffRequiredMixin, View):
             "seminar": seminar,
             "form": form,
             "talks": talks,
-            "materials": materials,
+            "material_sets": materials,
             "is_new": seminar is None,
-            "errors": error_summary(form, talks, materials),
+            "errors": error_summary(form, talks, *(fs for _talk, fs in materials)),
         }
         return render(request, self.template_name, context, status=status)
 
@@ -124,13 +148,17 @@ class SeminarEditView(StaffRequiredMixin, View):
 
     def post(self, request, pk=None):
         seminar = self.get_object(pk)
+        is_new = seminar is None
         form, talks, materials = self.build(seminar, request.POST, request.FILES)
 
-        if not (form.is_valid() and talks.is_valid() and materials.is_valid()):
+        # Список, а не цепочка and: проверить нужно всё, иначе часть ошибок
+        # не попадёт в сводку над формой.
+        checks = [form.is_valid(), talks.is_valid(), *(fs.is_valid() for _talk, fs in materials)]
+        if not all(checks):
             return self.render(request, seminar, form, talks, materials, status=422)
 
         with transaction.atomic():
-            if seminar is None:
+            if is_new:
                 form.instance.created_by = request.user
             seminar = form.save()
 
@@ -141,8 +169,21 @@ class SeminarEditView(StaffRequiredMixin, View):
                 talk_form = next(f for f in talks.forms if f.instance.pk == talk.pk)
                 talk_form.sync_speakers(talk)
 
-            materials.instance = seminar
-            materials.save()
+            # Материалы удалённого доклада уехали вместе с ним по каскаду —
+            # сохранять их формсет уже некуда.
+            dropped = {obj.pk for obj in talks.deleted_objects}
+            for talk, formset in materials:
+                if talk.pk not in dropped:
+                    formset.save()
+
+            # Адрес нового заседания собирается из темы первого доклада, а не
+            # из одной даты. Раньше это было невозможно: форма сохраняет
+            # заседание до докладов, и темы в тот момент ещё нет. У правки
+            # адрес не трогаем — по нему уже ходят ссылки.
+            lead = seminar.lead_talk
+            if is_new and lead is not None:
+                seminar.slug = SeminarForm._build_slug(seminar, lead.title_ru)
+                seminar.save(update_fields=["slug", "updated_at"])
 
             # Поисковый текст зависит от докладов, а они сохранились после семинара.
             seminar.rebuild_search_text()

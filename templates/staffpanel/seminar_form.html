@@ -61,38 +61,46 @@
       {% endfor %}
     </div>
     <button type="button" class="btn btn--sm" data-add-inline>+ {% translate "Ещё доклад" %}</button>
+    {% if is_new %}
+      <p class="fset__hint">{% translate "Материалы к докладу прикладываются после сохранения." %}</p>
+    {% endif %}
   </fieldset>
 
-  <fieldset class="fset">
-    <legend class="fset__legend">{% translate "Материалы" %}</legend>
-    <p class="fset__hint">{% translate "Только ссылками: видеозапись, презентация. Файлы прикреплять не нужно — аннотация набирается текстом в докладе." %}</p>
-    {{ materials.management_form }}
-    <div class="inlines" data-inline-group>
-      {% for matform in materials %}
-        <div class="inline" data-inline>
-          {{ matform.id }}
-          <div class="fgrid">
-            {% include "staffpanel/_field.html" with field=matform.kind %}
-            {% include "staffpanel/_field.html" with field=matform.title_ru %}
+  {% comment %}Материалы принадлежат докладу, а не заседанию: у заседания из
+  внешнего только ссылка на видеоконференцию. Доклада у несохранённой формы
+  ещё нет, поэтому блоки появляются после первого сохранения.{% endcomment %}
+  {% for talk, materials in material_sets %}
+    <fieldset class="fset">
+      <legend class="fset__legend">{% blocktranslate with title=talk.title_ru|truncatechars:40 %}Материалы доклада «{{ title }}»{% endblocktranslate %}</legend>
+      <p class="fset__hint">{% translate "Файл или ссылка: аннотация, презентация, видеозапись." %}</p>
+      {{ materials.management_form }}
+      <div class="inlines" data-inline-group>
+        {% for matform in materials %}
+          <div class="inline" data-inline>
+            {{ matform.id }}
+            <div class="fgrid">
+              {% include "staffpanel/_field.html" with field=matform.kind %}
+              {% include "staffpanel/_field.html" with field=matform.title_ru %}
+            </div>
+            {% include "staffpanel/_field.html" with field=matform.file %}
+            {% include "staffpanel/_field.html" with field=matform.url %}
+            {% if matform.non_field_errors %}<p class="formerror">{{ matform.non_field_errors.0 }}</p>{% endif %}
+            {% if matform.instance.pk %}
+              <label class="killswitch">{{ matform.DELETE }} {% translate "Удалить материал" %}</label>
+            {% endif %}
           </div>
-          {% include "staffpanel/_field.html" with field=matform.url %}
-          {% if matform.instance.file %}
-            {% comment %}Файл перенесён со старого сайта: заменить его из панели
-            нельзя, но знать, что он есть, секретарю нужно.{% endcomment %}
-            <p class="fset__hint">
-              {% translate "Файл из архива:" %}
-              <a href="{{ matform.instance.file.url }}" target="_blank" rel="noopener">{{ matform.instance.file.name }}</a>
-            </p>
-          {% endif %}
-          {% if matform.non_field_errors %}<p class="formerror">{{ matform.non_field_errors.0 }}</p>{% endif %}
-          {% if matform.instance.pk %}
-            <label class="killswitch">{{ matform.DELETE }} {% translate "Удалить материал" %}</label>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-    <button type="button" class="btn btn--sm" data-add-inline>+ {% translate "Ещё материал" %}</button>
-  </fieldset>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn btn--sm" data-add-inline>+ {% translate "Ещё материал" %}</button>
+    </fieldset>
+  {% empty %}
+    {% if not is_new %}
+      <fieldset class="fset">
+        <legend class="fset__legend">{% translate "Материалы" %}</legend>
+        <p class="fset__hint">{% translate "Материалы прикладываются к докладу — добавьте доклад и сохраните заседание." %}</p>
+      </fieldset>
+    {% endif %}
+  {% endfor %}
 
   <fieldset class="fset">
     <legend class="fset__legend">{% translate "Публикация и приём заявок" %}</legend>

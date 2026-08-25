@@ -131,7 +131,8 @@ class Command(BaseCommand):
 
         if options["dry_run"]:
             self._preview(parsed)
-            report.created += 1
+            # Узел с двумя докладами станет двумя заседаниями.
+            report.created += len(parsed.talks)
             report.talks += len(parsed.talks)
             report.materials += sum(len(t.materials) for t in parsed.talks)
             for message in parsed.warnings:
@@ -140,7 +141,7 @@ class Command(BaseCommand):
 
         try:
             with transaction.atomic():
-                seminar = import_seminar(
+                seminars = import_seminar(
                     parsed,
                     source=source,
                     status=options["status"],
@@ -154,16 +155,16 @@ class Command(BaseCommand):
             report.warn(url, f"не перенесено: {exc}")
             return
 
-        if seminar is None:
+        if not seminars:
             self.stdout.write(f"  уже импортировано: {href}")
-        else:
+        for seminar in seminars:
             self.stdout.write(f"  {parsed.date:%d.%m.%Y} {seminar.slug}")
 
     def _preview(self, parsed) -> None:
-        self.stdout.write(f"  {parsed.date:%d.%m.%Y} {parsed.start_time:%H:%M} — {parsed.title}")
+        self.stdout.write(f"  {parsed.date:%d.%m.%Y} {parsed.start_time:%H:%M}")
         for talk in parsed.talks:
             who = ", ".join(s.full_name for s in talk.speakers)
-            self.stdout.write(f"      {talk.title[:70]} — {who}")
+            self.stdout.write(f"      заседание: {talk.title[:70]} — {who}")
 
     def _print_report(self, report: Report, *, dry_run: bool) -> None:
         self.stdout.write("")

@@ -6,11 +6,24 @@ from django.contrib.postgres.search import SearchVector
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.i18n import TranslatedMixin
 
 RUSSIAN_SEARCH_CONFIG = "russian"
+
+# Транслитерация для адресов: slugify() выбрасывает всё нелатинское, и у
+# заседания с русским названием доклада адрес получился бы из одной даты.
+CYRILLIC_TO_LATIN = str.maketrans(
+    dict(zip("абвгдеёзийклмнопрстуфхцыэ", "abvgdeezijklmnoprstufhcye", strict=True))
+    | {"ж": "zh", "ч": "ch", "ш": "sh", "щ": "shch", "ю": "yu", "я": "ya", "ъ": "", "ь": ""}
+)
+
+
+def slugify_ru(text: str) -> str:
+    """Адрес из русского названия: «Малые тела» → «malye-tela»."""
+    return slugify(text.lower().translate(CYRILLIC_TO_LATIN))
 
 
 class Speaker(TranslatedMixin, models.Model):
@@ -56,8 +69,8 @@ class SeminarQuerySet(models.QuerySet):
         return self.prefetch_related("talks__speaker_links__speaker")
 
     def with_materials(self):
-        """Дополнительно материалы. Главной они не нужны — не грузим их зря."""
-        return self.prefetch_related("materials", "talks__materials")
+        """Дополнительно материалы докладов."""
+        return self.prefetch_related("talks__materials")
 
 
 class Seminar(TranslatedMixin, models.Model):
@@ -276,7 +289,11 @@ class TalkSpeaker(models.Model):
 
 
 class Material(TranslatedMixin, models.Model):
-    """Материал заседания: аннотация, презентация, видеозапись."""
+    """Материал доклада: аннотация, презентация, видеозапись.
+
+    Материал всегда принадлежит докладу, а не заседанию: у заседания своего
+    содержания нет, из внешнего у него только ссылка на видеоконференцию.
+    """
 
     class Kind(models.TextChoices):
         ABSTRACT = "abstract", _("Аннотация")
@@ -284,17 +301,11 @@ class Material(TranslatedMixin, models.Model):
         VIDEO = "video", _("Видеозапись")
         OTHER = "other", _("Материал")
 
-    seminar = models.ForeignKey(
-        Seminar, verbose_name=_("заседание"), on_delete=models.CASCADE, related_name="materials"
-    )
     talk = models.ForeignKey(
         Talk,
         verbose_name=_("доклад"),
-        null=True,
-        blank=True,
         on_delete=models.CASCADE,
         related_name="materials",
-        help_text=_("Пусто — материал относится ко всему заседанию."),
     )
     kind = models.CharField(_("тип"), max_length=10, choices=Kind.choices, default=Kind.ABSTRACT)
     title_ru = models.CharField(_("подпись"), max_length=200, blank=True, default="")
@@ -315,7 +326,7 @@ class Material(TranslatedMixin, models.Model):
         ]
 
     def __str__(self):
-        return f"{self.get_kind_display()} — {self.seminar_id}"
+        return f"{self.get_kind_display()} — {self.talk_id}"
 
     @property
     def href(self) -> str:

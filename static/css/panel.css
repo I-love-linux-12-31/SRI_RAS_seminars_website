@@ -36,7 +36,7 @@
 .flash__item {
   padding: 11px 15px;
   border-radius: 2px;
-  font-size: 15px;
+  font-size: 17px;
   border: 1px solid var(--rule);
   background: var(--surface-raised);
 }
@@ -62,7 +62,7 @@
   scrollbar-width: none;
 }
 .tab {
-  font-size: 15px;
+  font-size: 17px;
   padding: 12px 18px;
   min-height: var(--tap);
   display: flex;
@@ -104,7 +104,7 @@
 .stat__label {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 14px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -112,7 +112,7 @@
 .stat__value {
   margin: 8px 0 0;
   font-family: var(--font-serif);
-  font-size: 26px;
+  font-size: 28px;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
@@ -128,13 +128,13 @@
 .dtable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 15px;
+  font-size: 17px;
 }
 .dtable th {
   text-align: left;
   padding: 12px 16px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -153,7 +153,7 @@
 }
 .dtable__date {
   font-family: var(--font-mono);
-  font-size: 13.5px;
+  font-size: 15px;
   white-space: nowrap;
 }
 .dtable__num {
@@ -164,7 +164,7 @@
 .dtable__title {
   display: block;
   font-family: var(--font-serif);
-  font-size: 17.5px;
+  font-size: 20px;
   line-height: 1.3;
   color: var(--ink);
   text-wrap: pretty;
@@ -175,7 +175,7 @@
 }
 .dtable__sub {
   display: block;
-  font-size: 13.5px;
+  font-size: 15px;
   color: var(--ink-meta);
   margin-top: 4px;
 }
@@ -220,7 +220,7 @@
   background: var(--surface);
   border-radius: 2px;
   padding: 0 8px;
-  font-size: 14.5px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -260,7 +260,7 @@
     content: attr(data-label);
     flex: none;
     font-family: var(--font-mono);
-    font-size: 12.5px;
+    font-size: 14px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-meta);
@@ -307,13 +307,13 @@
 .formsummary__title {
   margin: 0;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 17px;
   color: var(--error-ink);
 }
 .formsummary__list {
   margin: 8px 0 0;
   padding-left: 20px;
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--ink-muted);
 }
 .formsummary__list li + li {
@@ -331,19 +331,23 @@
   background: var(--surface-raised);
   padding: clamp(16px, 2.2vw, 24px);
   margin: 0 0 18px;
+  /* У fieldset ширина по умолчанию считается от min-content, и длинная
+     подпись («Материалы доклада «…»») растягивала блок за край экрана. */
+  min-inline-size: 0;
 }
 .fset__legend {
+  max-width: 100%;
   padding: 0 8px;
   margin-left: -8px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 14px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-meta);
 }
 .fset__hint {
   margin: 0 0 14px;
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
@@ -356,11 +360,17 @@
 .afield {
   margin-bottom: 16px;
 }
+/* Ссылка «сейчас: …» у поля с файлом — это адрес в media с кириллицей в
+   процентном кодировании, одним словом на полтысячи знаков. Без переноса
+   она растягивает форму за край экрана. */
+.afield a {
+  overflow-wrap: anywhere;
+}
 .afield__label {
   display: block;
   margin-bottom: 6px;
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 14px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-meta);
@@ -377,7 +387,7 @@
   min-height: 48px;
   padding: 12px 14px;
   /* 16px — иначе iOS Safari зумит страницу при фокусе. */
-  font-size: 17.5px;
+  font-size: 20px;
   border: 1px solid var(--border-input);
   background: var(--surface);
   border-radius: 2px;
@@ -401,13 +411,13 @@
 }
 .afield__hint {
   margin: 6px 0 0;
-  font-size: 14px;
+  font-size: 15.5px;
   color: var(--ink-meta);
   text-wrap: pretty;
 }
 .afield__err {
   margin: 6px 0 0;
-  font-size: 14px;
+  font-size: 15.5px;
   color: var(--accent);
 }
 
@@ -418,7 +428,7 @@
 }
 .lang-extra summary {
   cursor: pointer;
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--ink-muted);
   min-height: 38px;
   display: flex;
@@ -448,7 +458,7 @@
   display: flex;
   gap: 9px;
   align-items: center;
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--ink-muted);
   min-height: var(--tap);
   cursor: pointer;
@@ -505,14 +515,14 @@
 }
 .note-card__tag {
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--accent);
   padding-top: 2px;
   white-space: nowrap;
 }
 .note-card p {
   margin: 0;
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--ink-muted);
   text-wrap: pretty;
 }

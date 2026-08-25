@@ -2,7 +2,8 @@
 
 Проверяется главным образом повторный запуск: импорт задуман как команда,
 которую гоняют не один раз, и второй прогон не должен ни удваивать архив,
-ни затирать правки секретаря.
+ни затирать правки секретаря. Второй сюжет — разбиение: узел старого сайта
+с двумя докладами это два заседания, а не одно.
 """
 
 import pytest
@@ -18,10 +19,17 @@ from .test_parser import FIXTURES, parse
 pytestmark = pytest.mark.django_db
 
 
-def run(name: str, **kwargs):
+def run(name: str, **kwargs) -> list[Seminar]:
     """Импортировать одну фикстуру. Файлы не качаем — сети в тестах нет."""
     options = {"source": _Source(), "download": False}
     return import_seminar(parse(name), **(options | kwargs))
+
+
+def run_one(name: str, **kwargs) -> Seminar:
+    """Фикстура с одним докладом: одно заседание."""
+    created = run(name, **kwargs)
+    assert len(created) == 1, f"ожидалось одно заседание, получено {len(created)}"
+    return created[0]
 
 
 class _Source:
@@ -33,63 +41,99 @@ class _Source:
         raise AssertionError("файлы качать не должны")
 
 
-def test_import_creates_seminar_with_talks_and_speakers():
-    seminar = run("seminar_1022023-ivanov-ba-dyachkova-mv")
+def test_import_creates_seminar_with_talk_and_speakers():
+    seminar = run_one("seminar_13052026-nestik-t")
 
     assert seminar.status == Seminar.Status.PUBLISHED
-    assert seminar.talks.count() == 2
-    assert Speaker.objects.filter(full_name_ru="Иванов Б.А.").exists()
+    assert seminar.talks.count() == 1
+    assert Speaker.objects.filter(full_name_ru="Нестик Тимофей Александрович").exists()
 
 
-def test_talk_order_is_preserved():
-    seminar = run("seminar_1022023-ivanov-ba-dyachkova-mv")
+def test_node_with_two_talks_becomes_two_seminars():
+    """Два доклада в один день — это два заседания, а не одно с двумя докладами.
 
-    titles = [talk.title_ru for talk in seminar.talks.all()]
+    На старом сайте они лежат в одном узле, но отличить «одно заседание с
+    двумя докладами» от «двух заседаний» по разметке нельзя, а собственной
+    темы у заседания нет — значит, делим по докладам.
+    """
+    created = run("seminar_1022023-ivanov-ba-dyachkova-mv")
+
+    assert len(created) == 2
+    assert {s.date for s in created} == {parse("seminar_1022023-ivanov-ba-dyachkova-mv").date}
+    assert [s.talks.count() for s in created] == [1, 1]
+    titles = [s.talks.get().title_ru for s in created]
     assert titles[0].startswith("Проблемы численного моделирования")
     assert titles[1].startswith("Места посадки")
 
 
+def test_split_seminars_get_their_own_addresses():
+    created = run("seminar_1022023-ivanov-ba-dyachkova-mv")
+
+    slugs = [s.slug for s in created]
+    assert len(set(slugs)) == 2, "у двух заседаний одного дня адреса должны различаться"
+    assert all(s.startswith("2023-02-01") for s in slugs)
+    assert "problemy" in slugs[0], "адрес собирается из темы доклада в транслитерации"
+
+
+def test_split_keeps_each_speaker_with_their_own_talk():
+    created = run("seminar_1022023-ivanov-ba-dyachkova-mv")
+
+    names = [[sp.full_name_ru for sp in s.talks.get().ordered_speakers] for s in created]
+    assert names == [["Иванов Б.А."], ["Дьячкова М.В."]]
+
+
 def test_speakers_keep_their_order_inside_a_talk():
     """Первый автор — не произвольный, порядок из старого сайта надо сохранить."""
-    seminar = run("seminar_14012026-chernecov-n-s-kavokin-k-v")
+    seminar = run_one("seminar_14012026-chernecov-n-s-kavokin-k-v")
 
     names = [s.full_name_ru for s in seminar.talks.first().ordered_speakers]
     assert names == ["Никита Севирович Чернецов", "Кирилл Витальевич Кавокин"]
 
 
 def test_material_keeps_a_link_when_files_are_not_downloaded():
-    seminar = run("seminar_13052026-nestik-t")
-    material = Material.objects.get(seminar=seminar)
+    seminar = run_one("seminar_13052026-nestik-t")
+    material = Material.objects.get(talk__seminar=seminar)
 
     assert material.kind == Material.Kind.ABSTRACT
     assert material.url.startswith("https://seminar.cosmos.ru/sites/default/files/")
-    assert material.talk_id is not None
+    assert material.talk_id == seminar.talks.get().pk
 
 
 def test_second_run_skips_an_already_imported_node():
-    first = run("seminar_13052026-nestik-t")
+    first = run_one("seminar_13052026-nestik-t")
     again = run("seminar_13052026-nestik-t")
 
-    assert again is None
+    assert again == []
     assert Seminar.objects.count() == 1
     assert LegacySeminarLink.objects.get().seminar_id == first.pk
 
 
-def test_update_replaces_talks_without_creating_a_second_seminar():
-    first = run("seminar_13052026-nestik-t")
+def test_update_replaces_the_talk_without_creating_a_second_seminar():
+    first = run_one("seminar_13052026-nestik-t")
     first.talks.create(title_ru="Лишний доклад, добавленный по ошибке", order=9)
 
-    again = run("seminar_13052026-nestik-t", update=True)
+    again = run_one("seminar_13052026-nestik-t", update=True)
 
     assert again.pk == first.pk
     assert Seminar.objects.count() == 1
     assert again.talks.count() == 1
 
 
-def test_update_keeps_the_address_so_links_do_not_break():
-    first = run("seminar_13052026-nestik-t")
+def test_update_does_not_multiply_split_seminars():
+    """Повторный прогон по узлу с двумя докладами не должен плодить заседания."""
+    first = run("seminar_1022023-ivanov-ba-dyachkova-mv")
 
-    assert run("seminar_13052026-nestik-t", update=True).slug == first.slug
+    again = run("seminar_1022023-ivanov-ba-dyachkova-mv", update=True)
+
+    assert [s.pk for s in again] == [s.pk for s in first]
+    assert Seminar.objects.count() == 2
+    assert LegacySeminarLink.objects.count() == 2
+
+
+def test_update_keeps_the_address_so_links_do_not_break():
+    first = run_one("seminar_13052026-nestik-t")
+
+    assert run_one("seminar_13052026-nestik-t", update=True).slug == first.slug
 
 
 def test_repeated_speaker_is_reused_not_duplicated():
@@ -101,7 +145,7 @@ def test_repeated_speaker_is_reused_not_duplicated():
 
 
 def test_seminar_with_a_broadcast_link_is_hybrid():
-    seminar = run("seminar_13052026-nestik-t")
+    seminar = run_one("seminar_13052026-nestik-t")
 
     assert seminar.seminar_format == Seminar.Format.HYBRID
     assert seminar.online_url == "https://tconf.geosmis.ru/c/456987"
@@ -116,7 +160,7 @@ def test_broadcast_password_is_reported_as_dropped():
 
 
 def test_import_fills_search_text_so_archive_search_finds_it():
-    seminar = run("seminar_13052026-nestik-t")
+    seminar = run_one("seminar_13052026-nestik-t")
     seminar.refresh_from_db()
 
     assert "Нестик" in seminar.search_text
@@ -133,7 +177,7 @@ def test_seminar_already_in_the_database_is_not_duplicated():
     parsed = parse("seminar_13052026-nestik-t")
     make_seminar(parsed.date)
 
-    assert run("seminar_13052026-nestik-t") is None
+    assert run("seminar_13052026-nestik-t") == []
     assert Seminar.objects.count() == 1
 
 
@@ -152,7 +196,7 @@ def test_adopt_by_date_overwrites_the_existing_seminar():
     existing = make_seminar(parsed.date)
     add_talk(existing, "Демонстрационный доклад", [("Иванов И. И.", "ИКИ РАН")])
 
-    seminar = run("seminar_13052026-nestik-t", adopt_by_date=True)
+    seminar = run_one("seminar_13052026-nestik-t", adopt_by_date=True)
 
     assert seminar.pk == existing.pk
     assert Seminar.objects.count() == 1
@@ -164,7 +208,7 @@ def test_adopted_seminar_keeps_its_address():
     parsed = parse("seminar_13052026-nestik-t")
     existing = make_seminar(parsed.date)
 
-    seminar = run("seminar_13052026-nestik-t", adopt_by_date=True)
+    seminar = run_one("seminar_13052026-nestik-t", adopt_by_date=True)
 
     assert seminar.slug == existing.slug
 
@@ -175,7 +219,9 @@ def test_adopted_seminar_keeps_its_address():
 def test_command_imports_the_whole_archive_from_a_directory(capsys):
     call_command("import_legacy", "--from-dir", str(FIXTURES), "--no-files")
 
-    assert Seminar.objects.count() == 3  # четвёртая карточка в архиве — заготовка «***»
+    # В архиве-фикстуре четыре карточки, четвёртая — заготовка «***».
+    # У всех трёх узлов по одному докладу, значит и заседаний три.
+    assert Seminar.objects.count() == 3
     assert LegacySeminarLink.objects.count() == 3
 
 

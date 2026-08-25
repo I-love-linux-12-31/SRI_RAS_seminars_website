@@ -144,7 +144,7 @@ def test_unpublished_seminar_link_is_not_reachable(client, seminar):
 def test_material_link_goes_through_the_gate_without_a_check(client, seminar):
     """Капча перед архивным PDF мешала бы без всякой пользы."""
     material = Material.objects.create(
-        seminar=seminar, kind=Material.Kind.VIDEO, url="https://example.org/video"
+        talk=seminar.lead_talk, kind=Material.Kind.VIDEO, url="https://example.org/video"
     )
 
     content = client.get(seminar.get_absolute_url()).content.decode()
@@ -159,7 +159,7 @@ def test_material_with_a_file_is_served_directly(client, seminar):
     """Свой файл — не внешняя ссылка, гонять его через шлюз незачем."""
     from django.core.files.base import ContentFile
 
-    material = Material(seminar=seminar, kind=Material.Kind.ABSTRACT)
+    material = Material(talk=seminar.lead_talk, kind=Material.Kind.ABSTRACT)
     material.file.save("annotation.pdf", ContentFile(b"%PDF-1.4"), save=True)
 
     assert material.href == material.file.url

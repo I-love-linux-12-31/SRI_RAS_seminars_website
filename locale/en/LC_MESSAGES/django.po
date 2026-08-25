@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SRAofRAS seminars\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-23 05:54+0300\n"
+"POT-Creation-Date: 2026-08-24 21:25+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -19,11 +19,11 @@ msgstr ""
 
 #: apps/core/models.py:27
 msgid "руководитель"
-msgstr "chair"
+msgstr "chief"
 
 #: apps/core/models.py:29
 msgid "звание руководителя"
-msgstr "chair’s title"
+msgstr "chief’s title"
 
 #: apps/core/models.py:32
 msgid "секретарь"
@@ -37,7 +37,7 @@ msgstr "secretary’s title"
 msgid "почта семинара"
 msgstr "seminar email"
 
-#: apps/core/models.py:38 apps/seminars/models.py:76
+#: apps/core/models.py:38 apps/seminars/models.py:89
 msgid "адрес"
 msgstr "address"
 
@@ -92,8 +92,7 @@ msgid "настройки сайта"
 msgstr "site settings"
 
 #: apps/legacy_import/models.py:24 apps/registrations/models.py:42
-#: apps/seminars/models.py:120 apps/seminars/models.py:231
-#: apps/seminars/models.py:288
+#: apps/seminars/models.py:133 apps/seminars/models.py:244
 msgid "заседание"
 msgstr "meeting"
 
@@ -101,23 +100,35 @@ msgstr "meeting"
 msgid "узел старого сайта"
 msgstr "legacy site node"
 
-#: apps/legacy_import/models.py:29
+#: apps/legacy_import/models.py:30
+msgid "номер доклада в узле"
+msgstr "talk number within the node"
+
+#: apps/legacy_import/models.py:33
+msgid ""
+"Узел старого сайта с двумя докладами разбирается на два заседания, и каждое "
+"помнит, каким по счёту докладом оно было."
+msgstr ""
+"A node of the old site with two talks is split into two meetings, and each "
+"one remembers which talk it came from."
+
+#: apps/legacy_import/models.py:37
 msgid "адрес на старом сайте"
 msgstr "legacy site URL"
 
-#: apps/legacy_import/models.py:30
+#: apps/legacy_import/models.py:38
 msgid "страница-источник"
 msgstr "source page"
 
-#: apps/legacy_import/models.py:31
+#: apps/legacy_import/models.py:39
 msgid "импортировано"
 msgstr "imported"
 
-#: apps/legacy_import/models.py:34
+#: apps/legacy_import/models.py:42
 msgid "связь со старым сайтом"
 msgstr "legacy site link"
 
-#: apps/legacy_import/models.py:35
+#: apps/legacy_import/models.py:43
 msgid "связи со старым сайтом"
 msgstr "legacy site links"
 
@@ -195,7 +206,7 @@ msgstr "being processed"
 msgid "оформлен"
 msgstr "issued"
 
-#: apps/registrations/models.py:45 apps/seminars/models.py:19
+#: apps/registrations/models.py:45 apps/seminars/models.py:32
 #: apps/staffpanel/export.py:16 templates/registrations/_success.html:20
 #: templates/registrations/email/admin_notice.txt:3
 #: templates/staffpanel/registrations.html:54
@@ -247,147 +258,143 @@ msgstr ""
 "Too many attempts from this address. Try again later or write to the seminar "
 "email address."
 
-#: apps/seminars/models.py:22
+#: apps/seminars/models.py:35
 msgid "должность и организация"
 msgstr "position and affiliation"
 
-#: apps/seminars/models.py:27
+#: apps/seminars/models.py:40
 msgid "докладчик"
 msgstr "speaker"
 
-#: apps/seminars/models.py:28 apps/seminars/models.py:239
+#: apps/seminars/models.py:41 apps/seminars/models.py:252
 msgid "докладчики"
 msgstr "speakers"
 
-#: apps/seminars/models.py:67
+#: apps/seminars/models.py:80
 msgid "Черновик"
 msgstr "Draft"
 
-#: apps/seminars/models.py:68
+#: apps/seminars/models.py:81
 msgid "Опубликован"
 msgstr "Published"
 
-#: apps/seminars/models.py:69
+#: apps/seminars/models.py:82
 msgid "Скрыт"
 msgstr "Hidden"
 
-#: apps/seminars/models.py:72
+#: apps/seminars/models.py:85
 msgid "Только очно"
 msgstr "In person only"
 
-#: apps/seminars/models.py:73
+#: apps/seminars/models.py:86
 msgid "Только онлайн"
 msgstr "Online only"
 
-#: apps/seminars/models.py:74
+#: apps/seminars/models.py:87
 msgid "Очно и онлайн"
 msgstr "In person and online"
 
-#: apps/seminars/models.py:77
+#: apps/seminars/models.py:90
 msgid "дата"
 msgstr "date"
 
-#: apps/seminars/models.py:78
+#: apps/seminars/models.py:91
 msgid "время начала"
 msgstr "start time"
 
-#: apps/seminars/models.py:80 apps/seminars/models.py:236
+#: apps/seminars/models.py:93 apps/seminars/models.py:249
 msgid "аннотация"
 msgstr "abstract"
 
-#: apps/seminars/models.py:83
+#: apps/seminars/models.py:96
 msgid "место"
 msgstr "venue"
 
-#: apps/seminars/models.py:86
+#: apps/seminars/models.py:99
 msgid "формат"
 msgstr "format"
 
-#: apps/seminars/models.py:93 templates/seminars/_seminar.html:81
+#: apps/seminars/models.py:106 templates/seminars/_seminar.html:88
 msgid "ссылка на видеоконференцию"
 msgstr "video conference link"
 
-#: apps/seminars/models.py:97
+#: apps/seminars/models.py:110
 msgid "статус"
 msgstr "status"
 
-#: apps/seminars/models.py:99
+#: apps/seminars/models.py:112
 msgid "нужен пропуск"
 msgstr "pass required"
 
-#: apps/seminars/models.py:101
+#: apps/seminars/models.py:114
 msgid "приём заявок до"
 msgstr "registration closes at"
 
-#: apps/seminars/models.py:104
+#: apps/seminars/models.py:117
 msgid "Если не задано, считается по умолчанию из настроек сайта."
 msgstr "If left empty, it is calculated from the site settings."
 
-#: apps/seminars/models.py:121
+#: apps/seminars/models.py:134
 msgid "заседания"
 msgstr "meetings"
 
-#: apps/seminars/models.py:160
+#: apps/seminars/models.py:173
 msgid "Заседание без докладов"
 msgstr "Meeting without talks"
 
-#: apps/seminars/models.py:233
+#: apps/seminars/models.py:246
 msgid "порядок"
 msgstr "order"
 
-#: apps/seminars/models.py:234
+#: apps/seminars/models.py:247
 msgid "название доклада"
 msgstr "talk title"
 
-#: apps/seminars/models.py:243 apps/seminars/models.py:292
+#: apps/seminars/models.py:256 apps/seminars/models.py:306
 msgid "доклад"
 msgstr "talk"
 
-#: apps/seminars/models.py:244
+#: apps/seminars/models.py:257
 msgid "доклады"
 msgstr "talks"
 
-#: apps/seminars/models.py:282
+#: apps/seminars/models.py:299
 msgid "Аннотация"
 msgstr "Abstract"
 
-#: apps/seminars/models.py:283
+#: apps/seminars/models.py:300
 msgid "Презентация"
 msgstr "Slides"
 
-#: apps/seminars/models.py:284
+#: apps/seminars/models.py:301
 msgid "Видеозапись"
 msgstr "Video recording"
 
-#: apps/seminars/models.py:285
+#: apps/seminars/models.py:302
 msgid "Материал"
 msgstr "Material"
 
-#: apps/seminars/models.py:297
-msgid "Пусто — материал относится ко всему заседанию."
-msgstr "Leave empty — the material belongs to the whole meeting."
-
-#: apps/seminars/models.py:299
+#: apps/seminars/models.py:310
 msgid "тип"
 msgstr "type"
 
-#: apps/seminars/models.py:300
+#: apps/seminars/models.py:311
 msgid "подпись"
 msgstr "caption"
 
-#: apps/seminars/models.py:302
+#: apps/seminars/models.py:313
 msgid "файл"
 msgstr "file"
 
-#: apps/seminars/models.py:303
+#: apps/seminars/models.py:314
 msgid "ссылка"
 msgstr "link"
 
-#: apps/seminars/models.py:306
+#: apps/seminars/models.py:317
 msgid "материал"
 msgstr "material"
 
-#: apps/seminars/models.py:307
+#: apps/seminars/models.py:318
 msgid "материалы"
 msgstr "materials"
 
@@ -440,66 +447,70 @@ msgstr "Pass"
 msgid "Заявка подана"
 msgstr "Submitted"
 
-#: apps/staffpanel/forms.py:120
+#: apps/staffpanel/forms.py:119
 msgid "Для онлайн-заседания пропуск не нужен."
 msgstr "An online meeting needs no pass."
 
-#: apps/staffpanel/forms.py:160
+#: apps/staffpanel/forms.py:162
 msgid "Докладчики"
 msgstr "Speakers"
 
-#: apps/staffpanel/forms.py:163
+#: apps/staffpanel/forms.py:165
 msgid "По одному в строке: Фамилия Имя Отчество — должность, организация"
 msgstr "One per line: Full name — position, organization"
 
-#: apps/staffpanel/forms.py:206
+#: apps/staffpanel/forms.py:208
 #, python-format
 msgid "Слишком короткое имя докладчика: «%s»"
 msgstr "Speaker name is too short: “%s”"
 
-#: apps/staffpanel/views.py:75
+#: apps/staffpanel/forms.py:251
+msgid "Приложите файл или укажите ссылку."
+msgstr "Attach a file or provide a link."
+
+#: apps/staffpanel/views.py:82
 msgid "Опубликовано"
 msgstr "Published"
 
-#: apps/staffpanel/views.py:76
+#: apps/staffpanel/views.py:83
 msgid "Черновики"
 msgstr "Drafts"
 
-#: apps/staffpanel/views.py:78
+#: apps/staffpanel/views.py:85
 msgid "Заявок на ближайшее"
 msgstr "Registrations for the next meeting"
 
-#: apps/staffpanel/views.py:82
+#: apps/staffpanel/views.py:89
 msgid "Пропусков в работе"
 msgstr "Passes being processed"
 
-#: apps/staffpanel/views.py:150
+#: apps/staffpanel/views.py:191
 msgid "Заседание сохранено."
 msgstr "Meeting saved."
 
-#: apps/staffpanel/views.py:184
+#: apps/staffpanel/views.py:225
 msgid "Создана копия. Укажите дату и опубликуйте, когда всё будет готово."
 msgstr ""
 "A copy has been created. Set the date and publish it once everything is "
 "ready."
 
-#: apps/staffpanel/views.py:199
+#: apps/staffpanel/views.py:240
 msgid "Заседание скрыто от посетителей."
 msgstr "The meeting is now hidden from visitors."
 
-#: apps/staffpanel/views.py:202
+#: apps/staffpanel/views.py:243
 msgid "Заседание опубликовано."
 msgstr "The meeting has been published."
 
-#: apps/staffpanel/views.py:277
+#: apps/staffpanel/views.py:318
 msgid "Неизвестный статус пропуска."
 msgstr "Unknown pass status."
 
-#: apps/staffpanel/views.py:281
+#: apps/staffpanel/views.py:322
 msgid "Статус пропуска обновлён."
 msgstr "Pass status updated."
 
-#: apps/staffpanel/views.py:315
+#: apps/staffpanel/views.py:356
 msgid "Настройки сохранены."
 msgstr "Settings saved."
 
@@ -729,7 +740,7 @@ msgid "Отправить заявку"
 msgstr "Submit registration"
 
 #: templates/registrations/_form.html:75
-#: templates/staffpanel/seminar_form.html:107
+#: templates/staffpanel/seminar_form.html:115
 msgid "Отмена"
 msgstr "Cancel"
 
@@ -795,14 +806,14 @@ msgid "Доклад"
 msgstr "Talk"
 
 #: templates/registrations/email/confirmation.txt:6
-#: templates/seminars/_seminar.html:68
+#: templates/seminars/_seminar.html:75
 #: templates/staffpanel/seminar_list.html:29
 #: templates/staffpanel/seminar_list.html:39
 msgid "Дата"
 msgstr "Date"
 
 #: templates/registrations/email/confirmation.txt:7
-#: templates/seminars/_seminar.html:72
+#: templates/seminars/_seminar.html:79
 msgid "Место"
 msgstr "Venue"
 
@@ -847,56 +858,51 @@ msgstr "Show the whole abstract"
 msgid "Свернуть"
 msgstr "Collapse"
 
-#: templates/seminars/_seminar.html:59
+#: templates/seminars/_seminar.html:58
+msgid "открыть"
+msgstr "open"
+
+#: templates/seminars/_seminar.html:66
 msgid "Доклады этого заседания ещё не объявлены."
 msgstr "The talks of this meeting have not been announced yet."
 
-#: templates/seminars/_seminar.html:66
+#: templates/seminars/_seminar.html:73
 #: templates/staffpanel/seminar_form.html:21
 msgid "Когда и где"
 msgstr "When and where"
 
-#: templates/seminars/_seminar.html:70
+#: templates/seminars/_seminar.html:77
 msgid "Время"
 msgstr "Time"
 
-#: templates/seminars/_seminar.html:74
+#: templates/seminars/_seminar.html:81
 #: templates/staffpanel/registrations.html:58
 #: templates/staffpanel/registrations.html:70
 msgid "Формат"
 msgstr "Format"
 
-#: templates/seminars/_seminar.html:77
+#: templates/seminars/_seminar.html:84
 msgid "Трансляция"
 msgstr "Broadcast"
 
-#: templates/seminars/_seminar.html:88
+#: templates/seminars/_seminar.html:95
 msgid "Записаться и заказать пропуск"
 msgstr "Register and request a pass"
 
-#: templates/seminars/_seminar.html:88 templates/seminars/home.html:7
+#: templates/seminars/_seminar.html:95 templates/seminars/home.html:7
 msgid "Записаться"
 msgstr "Register"
 
-#: templates/seminars/_seminar.html:90
+#: templates/seminars/_seminar.html:97
 #, python-format
 msgid "Приём заявок — до %(deadline)s"
 msgstr "Registration is open until %(deadline)s"
 
-#: templates/seminars/_seminar.html:92
+#: templates/seminars/_seminar.html:99
 msgid "Приём заявок закрыт."
 msgstr "Registration is closed."
 
-#: templates/seminars/_seminar.html:98
-#: templates/staffpanel/seminar_form.html:67
-msgid "Материалы"
-msgstr "Materials"
-
-#: templates/seminars/_seminar.html:101
-msgid "открыть"
-msgstr "open"
-
-#: templates/seminars/_seminar.html:109
+#: templates/seminars/_seminar.html:105
 msgid "Другие заседания"
 msgstr "Other meetings"
 
@@ -1048,11 +1054,8 @@ msgid "Перейти по ссылке"
 msgstr "Open the link"
 
 #: templates/seminars/link_challenge.html:29
-msgid ""
-"Проверка стоит затем, чтобы адрес конференции не собирали автоматически."
-msgstr ""
-"The check is here so that the conference address is not collected "
-"automatically."
+msgid "Проверка стоит для борьбы с ботами и спамом."
+msgstr "The check is here to protect from bots and spam."
 
 #: templates/staffpanel/_base_panel.html:8
 msgid "Панель администратора"
@@ -1183,17 +1186,18 @@ msgstr "Delete talk"
 msgid "Ещё доклад"
 msgstr "One more talk"
 
-#: templates/staffpanel/seminar_form.html:68
-msgid ""
-"Только ссылками: видеозапись, презентация. Файлы прикреплять не нужно — "
-"аннотация набирается текстом в докладе."
-msgstr ""
-"Links only: video recording, slides. No files to attach — the abstract is "
-"typed as text in the talk."
+#: templates/staffpanel/seminar_form.html:65
+msgid "Материалы к докладу прикладываются после сохранения."
+msgstr "Materials are attached to a talk after the meeting is saved."
 
-#: templates/staffpanel/seminar_form.html:84
-msgid "Файл из архива:"
-msgstr "File from the archive:"
+#: templates/staffpanel/seminar_form.html:75
+#, python-format
+msgid "Материалы доклада «%(title)s»"
+msgstr "Materials of the talk “%(title)s”"
+
+#: templates/staffpanel/seminar_form.html:76
+msgid "Файл или ссылка: аннотация, презентация, видеозапись."
+msgstr "A file or a link: abstract, slides, video recording."
 
 #: templates/staffpanel/seminar_form.html:90
 msgid "Удалить материал"
@@ -1203,16 +1207,25 @@ msgstr "Delete material"
 msgid "Ещё материал"
 msgstr "One more material"
 
-#: templates/staffpanel/seminar_form.html:99
+#: templates/staffpanel/seminar_form.html:100
+msgid "Материалы"
+msgstr "Materials"
+
+#: templates/staffpanel/seminar_form.html:101
+msgid ""
+"Материалы прикладываются к докладу — добавьте доклад и сохраните заседание."
+msgstr "Materials belong to a talk — add a talk and save the meeting."
+
+#: templates/staffpanel/seminar_form.html:107
 msgid "Публикация и приём заявок"
 msgstr "Publication and registration"
 
-#: templates/staffpanel/seminar_form.html:106
+#: templates/staffpanel/seminar_form.html:114
 #: templates/staffpanel/settings.html:67
 msgid "Сохранить"
 msgstr "Save"
 
-#: templates/staffpanel/seminar_form.html:109
+#: templates/staffpanel/seminar_form.html:117
 msgid "Посмотреть"
 msgstr "View"
 

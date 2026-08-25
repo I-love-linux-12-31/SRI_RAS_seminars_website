@@ -186,9 +186,7 @@ def test_home_does_not_scale_queries_with_talks(client, django_assert_max_num_qu
     upcoming = make_seminar(timezone.localdate() + timedelta(days=3), suffix="up")
     for i in range(4):
         talk = add_talk(upcoming, f"Ближайший доклад {i}", [(f"Смирнов {i}", "ИКИ РАН")])
-        Material.objects.create(
-            seminar=upcoming, talk=talk, kind=Material.Kind.VIDEO, url=f"https://e.org/{i}"
-        )
+        Material.objects.create(talk=talk, kind=Material.Kind.VIDEO, url=f"https://e.org/{i}")
     for i in range(5):
         past = make_seminar(timezone.localdate() - timedelta(days=i + 1), suffix=f"p{i}")
         add_talk(past, f"Доклад {i}", [(f"Докладчик {i}", "ИКИ РАН")])

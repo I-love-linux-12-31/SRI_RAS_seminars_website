@@ -177,7 +177,7 @@ class MaterialLinkView(OutboundLinkView):
 
     def material(self) -> Material:
         return get_object_or_404(
-            Material.objects.select_related("seminar").exclude(url=""), pk=self.kwargs["pk"]
+            Material.objects.select_related("talk").exclude(url=""), pk=self.kwargs["pk"]
         )
 
     def target(self) -> str:

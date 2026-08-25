@@ -215,12 +215,12 @@ class Command(BaseCommand):
                     TalkSpeaker.objects.create(
                         talk=talk, speaker=self._speaker(name, aff), order=s_order
                     )
-            # Материалы теперь только ссылками — например, на видеозапись.
-            Material.objects.create(
-                seminar=seminar,
-                kind=Material.Kind.VIDEO,
-                url=f"https://seminar.cosmos.ru/video/{seminar.slug}",
-            )
+                # Материал висит на докладе, а не на заседании.
+                Material.objects.create(
+                    talk=talk,
+                    kind=Material.Kind.VIDEO,
+                    url=f"https://seminar.cosmos.ru/video/{seminar.slug}-{order}",
+                )
             seminar.rebuild_search_text()
         return count
 
