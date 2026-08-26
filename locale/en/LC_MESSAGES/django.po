@@ -572,10 +572,6 @@ msgstr "Site language"
 msgid "Институт космических исследований РАН"
 msgstr "Space Research Institute of RAS"
 
-#: templates/base.html:39
-msgid "Научный семинар · с 1966 года"
-msgstr "Scientific seminar · since 1966"
-
 #: templates/base.html:41
 msgid ""
 "Заседания проходят раз в месяц: доклады по физике космоса, планетным "

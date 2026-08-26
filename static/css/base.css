@@ -133,14 +133,6 @@ button {
 .masthead__text {
   min-width: 0;
 }
-.masthead__kicker {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 10px;
-}
 .masthead h1 {
   margin: 0;
   font-family: var(--font-serif);
@@ -176,7 +168,8 @@ button {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: var(--surface-sunken);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--rule);
 }
 .nav__inner {
@@ -187,30 +180,25 @@ button {
 }
 .nav__links {
   display: flex;
-  gap: 2px;
+  gap: clamp(14px, 2.4vw, 30px);
   overflow-x: auto;
   scrollbar-width: none;
 }
 .nav__links a {
-  display: flex;
-  align-items: center;
-  min-height: var(--tap);
-  padding: 10px clamp(12px, 1.6vw, 20px);
+  padding-block: 16px;
   font-size: 17.5px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
+  color: var(--ink-meta);
+  border-bottom: 2px solid transparent;
   white-space: nowrap;
 }
 .nav__links a:hover {
   text-decoration: none;
-  background: var(--rule-soft);
   color: var(--ink);
 }
 .nav__links a[aria-current="page"] {
   font-weight: 600;
-  background: var(--accent);
-  color: #ffffff;
+  color: var(--ink);
+  border-bottom-color: var(--accent);
 }
 
 /* --- Кнопки --------------------------------------------------------------- */
