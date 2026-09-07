@@ -44,12 +44,36 @@
     </div>
   </div>
 
-  {% if seminar.pass_required %}
-    <div class="passhint" data-onsite-only>
-      <span class="passhint__tag">{% translate "ПРОПУСК" %}</span>
-      <p>
-        {% blocktranslate with deadline=seminar.registration_deadline|date:"j E, H:i" %}ФИО и организация передаются в бюро пропусков. Заявка на пропуск закрывается {{ deadline }}.{% endblocktranslate %}
-      </p>
+  {% comment %}Всё, что относится только к очному участию: гражданство и
+  подсказка про пропуск. Скрипт прячет весь блок целиком, когда выбран
+  онлайн-формат.{% endcomment %}
+  {% if seminar.allows_onsite %}
+    <div class="onsite" data-onsite-only {% if form.attendance.value == 'online' %}hidden{% endif %}>
+      <label class="consent {% if form.is_foreign.errors %}consent--error{% endif %}">
+        {{ form.is_foreign }}
+        <span>
+          {{ form.is_foreign.label }}
+          <span class="consent__note">
+            {% if seminar.foreign_registration_open %}
+              {% blocktranslate with deadline=seminar.foreign_registration_deadline|date:"j E, H:i" %}Пропуск не гражданину РФ бюро оформляет дольше, поэтому очные заявки от иностранных участников принимаются до {{ deadline }}.{% endblocktranslate %}
+            {% else %}
+              {% translate "Очные заявки от иностранных участников на это заседание уже не принимаются: пропуск не успеют оформить. Участие онлайн по-прежнему доступно." %}
+            {% endif %}
+          </span>
+        </span>
+      </label>
+      {% if form.is_foreign.errors %}
+        <p class="formerror">{{ form.is_foreign.errors.0 }}</p>
+      {% endif %}
+
+      {% if seminar.pass_required %}
+        <div class="passhint">
+          <span class="passhint__tag">{% translate "ПРОПУСК" %}</span>
+          <p>
+            {% blocktranslate with deadline=seminar.registration_deadline|date:"j E, H:i" %}ФИО и организация передаются в бюро пропусков. Заявка на пропуск закрывается {{ deadline }}.{% endblocktranslate %}
+          </p>
+        </div>
+      {% endif %}
     </div>
   {% endif %}
 

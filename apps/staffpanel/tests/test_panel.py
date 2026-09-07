@@ -157,6 +157,7 @@ def seminar_payload(**overrides) -> dict:
         "talks-0-title_ru": "Турбулентность солнечного ветра",
         "talks-0-title_en": "",
         "talks-0-abstract_ru": "",
+        "talks-0-abstract_en": "",
         "talks-0-speakers_raw": "Смирнов Андрей Петрович — д. ф.-м. н., ИКИ РАН",
     }
     return data | overrides
@@ -196,6 +197,29 @@ def test_create_seminar_with_talk_and_speaker(as_secretary):
     talk = seminar.talks.get()
     assert [s.full_name_ru for s in talk.ordered_speakers] == ["Смирнов Андрей Петрович"]
     assert Speaker.objects.get().affiliation_ru == "д. ф.-м. н., ИКИ РАН"
+
+
+def test_talk_abstract_is_saved_in_both_languages(as_secretary):
+    """Английская аннотация доклада необязательна, но панель должна её принимать."""
+    payload = seminar_payload(
+        **{
+            "talks-0-abstract_ru": "Аннотация доклада по-русски.",
+            "talks-0-abstract_en": "The talk abstract in English.",
+        }
+    )
+
+    as_secretary.post(reverse("staffpanel:seminar_create"), payload)
+
+    talk = Seminar.objects.get().talks.get()
+    assert talk.abstract_ru == "Аннотация доклада по-русски."
+    assert talk.abstract_en == "The talk abstract in English."
+
+
+def test_talk_saves_without_the_english_abstract(as_secretary):
+    response = as_secretary.post(reverse("staffpanel:seminar_create"), seminar_payload())
+
+    assert response.status_code == 302
+    assert Seminar.objects.get().talks.get().abstract_en == ""
 
 
 def test_speakers_are_reused_not_duplicated(as_secretary):
@@ -399,6 +423,7 @@ def settings_payload(**overrides) -> dict:
         "address_ru": "Москва, ул. Профсоюзная, 84/32",
         "address_en": "",
         "registration_lead_hours": "48",
+        "foreign_extra_lead_hours": "48",
         "notify_on_registration": "on",
         "notify_email": "",
         "online_link_captcha": "on",

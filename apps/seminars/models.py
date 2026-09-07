@@ -199,12 +199,29 @@ class Seminar(TranslatedMixin, models.Model):
         return self.starts_at - timedelta(hours=SiteSettings.load().registration_lead_hours)
 
     @property
+    def foreign_registration_deadline(self) -> datetime:
+        """Срок для не граждан РФ: пропуск им бюро оформляет дольше."""
+        from apps.core.models import SiteSettings
+
+        extra = SiteSettings.load().foreign_extra_lead_hours
+        return self.registration_deadline - timedelta(hours=extra)
+
+    @property
     def registration_open(self) -> bool:
         return (
             self.status == self.Status.PUBLISHED
             and not self.is_past
             and timezone.now() < self.registration_deadline
         )
+
+    @property
+    def foreign_registration_open(self) -> bool:
+        """Открыт ли приём очных заявок от не граждан РФ.
+
+        Онлайн-участия не касается: пропуск там не нужен, а раньше срока
+        закрывается именно оформление пропуска.
+        """
+        return self.registration_open and timezone.now() < self.foreign_registration_deadline
 
     @property
     def allows_onsite(self) -> bool:

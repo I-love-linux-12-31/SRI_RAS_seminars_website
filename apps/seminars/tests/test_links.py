@@ -46,15 +46,23 @@ def test_seminar_page_shows_the_link_but_not_the_address(client, seminar):
     assert CONFERENCE not in content, "адрес конференции не должен попадать в разметку"
 
 
-def test_archive_seminar_also_shows_the_link(client):
-    """Заказчик просил показывать ссылку и у прошедших заседаний."""
+def test_archive_seminar_hides_the_link(client):
+    """Заказчик просил убрать ссылку у прошедших заседаний: подключаться некуда."""
     past = make_seminar(timezone.localdate() - timedelta(days=30), online_url=CONFERENCE)
     add_talk(past, "Прошедший доклад", [("Иванов И. И.", "ИКИ РАН")])
 
     content = client.get(past.get_absolute_url()).content.decode()
 
-    assert gate(past) in content
+    assert gate(past) not in content
     assert CONFERENCE not in content
+
+
+def test_archive_seminar_gate_is_closed_too(client):
+    """Убрать ссылку со страницы мало: адрес шлюза угадывается по slug."""
+    past = make_seminar(timezone.localdate() - timedelta(days=30), online_url=CONFERENCE)
+    add_talk(past, "Прошедший доклад", [("Иванов И. И.", "ИКИ РАН")])
+
+    assert client.get(gate(past)).status_code == 404
 
 
 def test_gate_asks_for_the_code_first(client, seminar):

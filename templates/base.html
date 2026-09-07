@@ -72,6 +72,19 @@
   </div>
 </dialog>
 
+{% comment %}Всплывающий блок с аннотацией целиком. Наполняется скриптом при
+открытии; без JavaScript аннотация и так видна на странице полностью, и блок
+не понадобится.{% endcomment %}
+<dialog id="longtext-sheet" class="sheet" aria-labelledby="longtext-sheet-title">
+  <div class="wrap sheet__inner">
+    <div class="sheet__head">
+      <p class="sheet__title" id="longtext-sheet-title"></p>
+      <button type="button" class="modal__close" data-close-sheet aria-label="{% translate 'Закрыть' %}">✕</button>
+    </div>
+    <div class="sheet__body" data-sheet-body></div>
+  </div>
+</dialog>
+
 <footer class="footer">
   <div class="wrap footer__inner">
     <div>

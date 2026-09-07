@@ -1,6 +1,7 @@
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import DetailView, ListView, TemplateView
@@ -153,14 +154,21 @@ class OutboundLinkView(View):
 
 
 class OnlineLinkView(OutboundLinkView):
-    """Ссылка на видеоконференцию заседания."""
+    """Ссылка на видеоконференцию предстоящего заседания.
+
+    У прошедшего заседания ссылки нет ни на странице, ни здесь: подключаться
+    уже некуда, а живой адрес конференции в архиве только сбивает с толку.
+    Запись, если она есть, лежит материалом доклада.
+    """
 
     protected = True
 
     def seminar(self) -> Seminar:
         if not hasattr(self, "_seminar"):
             self._seminar = get_object_or_404(
-                Seminar.objects.visible_to(self.request.user).exclude(online_url=""),
+                Seminar.objects.visible_to(self.request.user)
+                .exclude(online_url="")
+                .filter(date__gte=timezone.localdate()),
                 slug=self.kwargs["slug"],
             )
         return self._seminar

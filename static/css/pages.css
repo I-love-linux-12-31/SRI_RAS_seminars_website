@@ -42,8 +42,7 @@
 
 .page-title {
   margin: 0;
-  font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(25px, 2.4vw, 31px);
   line-height: 1.1;
   letter-spacing: -0.015em;
@@ -93,6 +92,71 @@
   text-transform: uppercase;
   color: var(--accent);
   border-bottom: 1px solid currentColor;
+}
+
+/* Аннотация целиком — всплывающим блоком во всю ширину страницы. В колонке
+   доклада длинному тексту тесно, а разворачивание на месте сдвигало вниз всё
+   остальное. Сам блок во всю ширину, содержимое внутри идёт по сетке сайта. */
+.sheet {
+  width: 100%;
+  max-width: 100%;
+  max-height: 86dvh;
+  margin: auto 0;
+  padding: 0;
+  border: 0;
+  border-block: 1px solid var(--rule);
+  background: var(--bg);
+  color: var(--ink);
+  animation: sheet-in 0.24s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.sheet::backdrop {
+  background: rgba(13, 16, 20, 0.62);
+  backdrop-filter: blur(3px);
+}
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.sheet__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: 86dvh;
+  padding-block: clamp(20px, 3vw, 36px);
+}
+.sheet__head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.sheet__title {
+  margin: 0;
+  font-weight: 500;
+  font-size: clamp(21px, 2vw, 26px);
+  line-height: 1.2;
+  text-wrap: pretty;
+}
+.sheet__body {
+  overflow-y: auto;
+  font-size: 19px;
+  /* Строка во всю ширину страницы длинная, и глазу нужно за что-то цепляться
+     при возврате на следующую — отсюда интерлиньяж крупнее базового. */
+  line-height: 1.7;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+.sheet__body p {
+  margin: 0 0 1em;
+}
+.sheet__body p:last-child {
+  margin-bottom: 0;
 }
 
 .rule {
@@ -187,7 +251,7 @@
 }
 .person__name {
   margin: 0;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 20px;
   text-wrap: pretty;
 }
@@ -232,7 +296,6 @@
 }
 .card h4 {
   margin: 0;
-  font-family: var(--font-serif);
   font-weight: 500;
   font-size: 22px;
 }
@@ -271,7 +334,7 @@
 }
 .minilist__title {
   display: block;
-  font-family: var(--font-serif);
+  font-weight: 500;
   font-size: 22px;
   line-height: 1.3;
   text-wrap: pretty;
@@ -281,14 +344,6 @@
   font-size: 16px;
   color: var(--ink-muted);
   margin-top: 5px;
-}
-.minilist--compact .minilist__link {
-  grid-template-columns: 1fr;
-  padding: 12px 2px;
-  gap: 4px;
-}
-.minilist--compact .minilist__title {
-  font-size: 20px;
 }
 
 /* --- Архив: фильтры ------------------------------------------------------- */
@@ -372,8 +427,7 @@
 }
 .row__title {
   margin: 0;
-  font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 500;
   font-size: 23px;
   line-height: 1.28;
   text-wrap: pretty;
@@ -442,7 +496,7 @@
   text-align: center;
 }
 .empty__title {
-  font-family: var(--font-serif);
+  font-weight: 500;
   font-size: 23px;
   margin: 0 0 8px;
 }
@@ -533,8 +587,7 @@
 }
 .talk__title {
   margin: 7px 0 0;
-  font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 500;
   font-size: 19px;
   line-height: 1.32;
   text-wrap: pretty;
@@ -557,11 +610,6 @@
 }
 .panel + .panel {
   margin-top: 18px;
-}
-.panel--plain {
-  background: none;
-  border: 0;
-  padding: 0;
 }
 .panel p {
   font-size: 17.5px;
@@ -596,7 +644,7 @@
 }
 .about__name {
   margin: 8px 0 0;
-  font-family: var(--font-serif);
+  font-weight: 500;
   font-size: 23px;
   line-height: 1.25;
 }

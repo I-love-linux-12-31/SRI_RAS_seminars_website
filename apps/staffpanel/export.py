@@ -18,6 +18,7 @@ COLUMNS = [
     (_("Должность"), "position"),
     (_("Почта"), "email"),
     (_("Формат участия"), "attendance_display"),
+    (_("Гражданство"), "citizenship_display"),
     (_("Пропуск"), "pass_display"),
     (_("Заявка подана"), "submitted"),
 ]
@@ -31,6 +32,7 @@ def _rows(registrations):
             "position": registration.position or "—",
             "email": registration.email,
             "attendance_display": registration.get_attendance_display(),
+            "citizenship_display": registration.citizenship_display,
             "pass_display": registration.get_pass_status_display(),
             "submitted": registration.created_at.strftime("%d.%m.%Y %H:%M"),
         }

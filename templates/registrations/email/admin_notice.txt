@@ -5,6 +5,7 @@
 {% translate "Должность" %}: {{ registration.position|default:"—" }}
 {% translate "Почта" %}: {{ registration.email }}
 {% translate "Формат участия" %}: {{ registration.get_attendance_display }}
+{% translate "Гражданство" %}: {{ registration.citizenship_display }}
 {% translate "Пропуск" %}: {{ registration.get_pass_status_display }}
 {% translate "Подана" %}: {{ registration.created_at|date:"d.m.Y H:i" }}
 

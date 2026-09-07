@@ -43,6 +43,14 @@ class SiteSettings(models.Model):
     registration_lead_hours = models.PositiveSmallIntegerField(
         _("закрывать заявки за N часов до начала"), default=48
     )
+    # Пропуск не гражданину РФ бюро оформляет дольше, чем гражданину, поэтому
+    # очные заявки от иностранцев закрываются раньше остальных. Срок такой же
+    # настраиваемый: правила бюро пропусков меняются.
+    foreign_extra_lead_hours = models.PositiveSmallIntegerField(
+        _("закрывать очные заявки не граждан РФ на N часов раньше"),
+        default=48,
+        help_text=_("Считается от общего срока приёма заявок. Только для очного участия."),
+    )
 
     notify_on_registration = models.BooleanField(_("письмо о каждой заявке"), default=True)
     notify_email = models.EmailField(_("куда слать уведомления"), blank=True, default="")

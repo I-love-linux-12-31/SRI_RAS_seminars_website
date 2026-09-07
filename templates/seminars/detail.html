@@ -6,13 +6,22 @@
 {% block description %}{% firstof seminar|tr:"abstract" seminar.lead_talk|tr:"title" as summary %}{{ summary|truncatechars:180 }}{% endblock %}
 
 {% block content %}
-<section class="wrap section section--last">
+<section class="wrap section">
   <a class="back" href="{% url 'seminars:archive' %}">← {% translate "К архиву" %}</a>
 
   {% if seminar.status != 'published' %}
     <p class="preview-note">{% translate "Предпросмотр: заседание не опубликовано и посетителям не видно." %}</p>
   {% endif %}
 
-  {% include "seminars/_seminar.html" with seminar=seminar related=related %}
+  {% include "seminars/_seminar.html" with seminar=seminar %}
 </section>
+
+{% comment %}Другие заседания идут снизу во всю ширину — тем же блоком, что и
+на главной. Узкой колонкой сбоку названия докладов не помещались.{% endcomment %}
+{% if related %}
+<section class="wrap section section--last">
+  {% translate "Другие заседания" as other_heading %}
+  {% include "seminars/_archive_list.html" with seminars=related heading=other_heading %}
+</section>
+{% endif %}
 {% endblock %}

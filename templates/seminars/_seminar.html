@@ -4,10 +4,11 @@
 странице заседания, и на главной — заказчику вид страницы заседания понравился
 больше, а держать две вёрстки одного и того же значит расходиться в мелочах.
 
+Заголовок заседания намеренно не ссылка: на главной по нему кликали, попадали
+на страницу заседания и считали, что их увели в архив.
+
 Параметры включения:
-  seminar  — заседание;
-  linked   — заголовок ведёт на страницу заседания (главная);
-  related  — список «другие заседания» (страница заседания).
+  seminar — заседание.
 {% endcomment %}
 <div class="detail">
   <div class="detail__main">
@@ -16,14 +17,12 @@
     {% endif %}
 
     <h2 class="page-title">
-      {% blocktranslate asvar heading with day=seminar.date|date:"j E Y" %}Заседание {{ day }}{% endblocktranslate %}
-      {% if linked %}
-        <a class="plain" href="{{ seminar.get_absolute_url }}">{{ heading }}</a>
-      {% else %}{{ heading }}{% endif %}
+      {% blocktranslate with day=seminar.date|date:"j E Y" %}Заседание {{ day }}{% endblocktranslate %}
     </h2>
 
     {% if seminar|tr:"abstract" %}
       <div class="lede" data-longtext
+           data-longtext-title="{% translate 'Аннотация заседания' %}"
            data-more="{% translate 'Показать аннотацию целиком' %}"
            data-less="{% translate 'Свернуть' %}">{{ seminar|tr:"abstract"|linebreaks }}</div>
     {% endif %}
@@ -46,6 +45,7 @@
             <h3 class="talk__title">{{ talk|tr:"title" }}</h3>
             {% if talk|tr:"abstract" %}
               <div class="talk__abstract" data-longtext
+                   data-longtext-title="{{ talk|tr:'title' }}"
                    data-more="{% translate 'Показать аннотацию целиком' %}"
                    data-less="{% translate 'Свернуть' %}">{{ talk|tr:"abstract"|linebreaks }}</div>
             {% endif %}
@@ -79,7 +79,10 @@
         <dd>{{ seminar|tr:"place" }}</dd>
         <dt>{% translate "Формат" %}</dt>
         <dd>{{ seminar.get_seminar_format_display }}</dd>
-        {% if seminar.online_url %}
+        {% comment %}У прошедшего заседания ссылки на трансляцию нет: подключаться
+        уже некуда, а живой адрес конференции в архиве только сбивает с толку.
+        Запись, если она есть, лежит материалом доклада.{% endcomment %}
+        {% if seminar.online_url and not seminar.is_past %}
           <dt>{% translate "Трансляция" %}</dt>
           {% comment %}Адрес конференции ведёт через шлюз: в разметке его нет,
           и краулеру доставать нечего.{% endcomment %}
@@ -97,21 +100,5 @@
         <p class="note">{% translate "Приём заявок закрыт." %}</p>
       {% endif %}
     </div>
-
-    {% if related %}
-      <div class="panel panel--plain">
-        <p class="mono-label">{% translate "Другие заседания" %}</p>
-        <ul class="minilist minilist--compact">
-          {% for r in related %}
-            <li>
-              <a class="minilist__link" href="{{ r.get_absolute_url }}">
-                <span class="minilist__date">{{ r.date|date:"d.m.Y" }}</span>
-                <span class="minilist__title">{{ r.lead_talk|tr:"title" }}</span>
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
   </aside>
 </div>

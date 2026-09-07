@@ -15,7 +15,7 @@ from typing import ClassVar
 from django import forms
 from django.core import signing
 from django.db.models.functions import Lower
-from django.utils import timezone
+from django.utils import formats, timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.seminars.models import Seminar
@@ -34,6 +34,12 @@ class RegistrationForm(forms.ModelForm):
     website = forms.CharField(required=False, widget=forms.HiddenInput)
     ts = forms.CharField(required=False, widget=forms.HiddenInput)
 
+    # Не обязательное к отметке поле: галочка сама по себе ответ «нет».
+    is_foreign = forms.BooleanField(
+        required=False,
+        label=_("Я не гражданин РФ"),
+    )
+
     consent_pd = forms.BooleanField(
         required=True,
         label=_("Я согласен на обработку персональных данных"),
@@ -46,6 +52,7 @@ class RegistrationForm(forms.ModelForm):
         model = Registration
         fields: ClassVar[list[str]] = [
             "attendance",
+            "is_foreign",
             "full_name",
             "organization",
             "position",
@@ -128,6 +135,27 @@ class RegistrationForm(forms.ModelForm):
         # а отправлена после.
         if not self.seminar.registration_open:
             raise forms.ValidationError(_("Приём заявок на это заседание закрыт."), code="closed")
+
+        # Очная заявка от не гражданина РФ закрывается раньше: бюро пропусков
+        # оформляет такой пропуск дольше. Онлайн-участия это не касается —
+        # пропуск там не нужен.
+        onsite = cleaned.get("attendance") == Registration.Attendance.ONSITE
+        if onsite and cleaned.get("is_foreign") and not self.seminar.foreign_registration_open:
+            deadline = formats.date_format(
+                timezone.localtime(self.seminar.foreign_registration_deadline), "j E, H:i"
+            )
+            self.add_error(
+                "is_foreign",
+                forms.ValidationError(
+                    _(
+                        "Очные заявки от не граждан РФ принимались до %(deadline)s: "
+                        "пропуск оформляется дольше. Выберите участие онлайн или "
+                        "напишите на почту семинара."
+                    ),
+                    code="foreign_closed",
+                    params={"deadline": deadline},
+                ),
+            )
         return cleaned
 
     def save(self, commit=True, ip: str | None = None):

@@ -105,6 +105,10 @@ class SeminarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["place_ru"].required = False
+        # У *_en в моделях нет verbose_name: русская колонка основная, а
+        # английская — её перевод. Без подписи панель показывала «Abstract en».
+        self.fields["abstract_en"].label = _("Аннотация по-английски")
+        self.fields["place_en"].label = _("Место по-английски")
 
         for field in self.fields.values():
             if isinstance(field.widget, forms.CheckboxInput):
@@ -167,16 +171,19 @@ class TalkForm(forms.ModelForm):
 
     class Meta:
         model = Talk
-        fields: ClassVar[list[str]] = ["title_ru", "title_en", "abstract_ru"]
+        fields: ClassVar[list[str]] = ["title_ru", "title_en", "abstract_ru", "abstract_en"]
         widgets: ClassVar[dict] = {
             "title_ru": forms.Textarea(attrs={"rows": 2, "class": "field"}),
             "title_en": forms.Textarea(attrs={"rows": 2, "class": "field"}),
-            "abstract_ru": forms.Textarea(attrs={"rows": 3, "class": "field"}),
+            "abstract_ru": forms.Textarea(attrs={"rows": 4, "class": "field"}),
+            "abstract_en": forms.Textarea(attrs={"rows": 4, "class": "field"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["title_en"].required = False
+        self.fields["title_en"].label = _("Название по-английски")
+        self.fields["abstract_en"].label = _("Аннотация по-английски")
         if self.instance.pk:
             self.fields["speakers_raw"].initial = self._dump_speakers(self.instance)
 

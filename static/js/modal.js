@@ -51,10 +51,13 @@
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   });
 
-  // Формат участия управляет подсказкой про пропуск.
+  // Формат участия управляет блоками, которые касаются только очного участия:
+  // гражданства и подсказки про пропуск.
   document.addEventListener("change", function (event) {
     if (event.target.name !== "attendance") return;
-    var hint = document.querySelector("[data-onsite-only]");
-    if (hint) hint.hidden = event.target.value !== "onsite";
+    var online = event.target.value !== "onsite";
+    document.querySelectorAll("[data-onsite-only]").forEach(function (block) {
+      block.hidden = online;
+    });
   });
 })();

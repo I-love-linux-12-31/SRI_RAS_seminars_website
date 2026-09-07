@@ -38,6 +38,7 @@
   <fieldset class="fset">
     <legend class="fset__legend">{% translate "Заявки и уведомления" %}</legend>
     {% include "staffpanel/_field.html" with field=form.registration_lead_hours %}
+    {% include "staffpanel/_field.html" with field=form.foreign_extra_lead_hours %}
     {% include "staffpanel/_field.html" with field=form.notify_on_registration %}
     {% include "staffpanel/_field.html" with field=form.notify_email %}
     {% include "staffpanel/_field.html" with field=form.retention_months %}

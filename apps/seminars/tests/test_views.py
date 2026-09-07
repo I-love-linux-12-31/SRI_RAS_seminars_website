@@ -138,6 +138,76 @@ def test_home_shows_the_upcoming_seminar_like_its_own_page():
         assert marker in page, marker
 
 
+def test_home_does_not_link_the_upcoming_seminar():
+    """Заказчик просил убрать ссылку: по ней уходили и думали, что попали в архив."""
+    upcoming = make_seminar(timezone.localdate() + timedelta(days=3))
+    add_talk(upcoming, "Ближайший доклад", [("Смирнов Андрей", "ИКИ РАН")])
+
+    content = get(reverse("seminars:home"))
+    heading = content[content.index('class="page-title"') : content.index("</h2>")]
+
+    assert upcoming.get_absolute_url() not in heading
+
+
+def test_other_seminars_go_under_the_page_full_width():
+    """Узкой колонки сбоку больше нет: архив добавляется снизу, как на главной."""
+    past = make_seminar(timezone.localdate() - timedelta(days=30), suffix="past")
+    add_talk(past, "Прошедший доклад", [("Иванов И. И.", "ИКИ РАН")])
+    current = make_seminar(timezone.localdate() + timedelta(days=3), suffix="cur")
+    add_talk(current, "Ближайший доклад", [("Петров П. П.", "ИКИ РАН")])
+
+    content = get(current.get_absolute_url())
+
+    assert "Другие заседания" in content
+    assert "Прошедший доклад" in content
+    # Блок идёт после карточки заседания, а не внутри её боковой колонки.
+    assert content.index("</aside>") < content.index("Другие заседания")
+
+
+def test_talk_abstract_falls_back_to_russian_without_a_translation():
+    seminar = make_seminar(timezone.localdate() + timedelta(days=3))
+    add_talk(
+        seminar,
+        "Доклад",
+        [("Иванов И. И.", "ИКИ РАН")],
+        abstract_ru="Аннотация по-русски.",
+    )
+
+    assert "Аннотация по-русски." in get("/en" + seminar.get_absolute_url())
+
+
+def test_english_page_shows_the_english_talk_abstract():
+    seminar = make_seminar(timezone.localdate() + timedelta(days=3))
+    add_talk(
+        seminar,
+        "Доклад",
+        [("Иванов И. И.", "ИКИ РАН")],
+        abstract_ru="Аннотация по-русски.",
+        abstract_en="Abstract in English.",
+    )
+
+    content = get("/en" + seminar.get_absolute_url())
+
+    assert "Abstract in English." in content
+    assert "Аннотация по-русски." not in content
+
+
+def test_long_abstract_opens_in_a_full_width_sheet():
+    """Разметка отдаёт текст целиком, а скрипту нужны зацепки: заголовок и блок."""
+    seminar = make_seminar(timezone.localdate() + timedelta(days=3))
+    add_talk(
+        seminar,
+        "Турбулентность солнечного ветра",
+        [("Смирнов Андрей", "ИКИ РАН")],
+        abstract_ru="Очень длинная аннотация. " * 60,
+    )
+
+    content = get(seminar.get_absolute_url())
+
+    assert 'data-longtext-title="Турбулентность солнечного ветра"' in content
+    assert 'id="longtext-sheet"' in content, "всплывающему блоку нужен контейнер в base.html"
+
+
 def test_long_abstract_is_rendered_whole():
     """Без JavaScript аннотация видна целиком; подрезает её только скрипт."""
     text = "Очень длинная аннотация. " * 60

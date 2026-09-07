@@ -8,14 +8,17 @@ gettext читает каталог из файлов, в базу не ходи
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% translate "Ошибка сервера" %} — {% translate "Научный семинар ИКИ РАН" %}</title>
   <style>
-    body { margin:0; background:#F4F2EC; color:#14171B;
-           font-family: system-ui, -apple-system, sans-serif; line-height:1.55; }
+    /* Стили зашиты: статика при 500 может не отдаваться. Гарнитуры и цвета
+       повторяют tokens.css — Roboto, если он уже в кеше браузера, иначе
+       системный гротеск. */
+    body { margin:0; background:#ffffff; color:#263238;
+           font-family: Roboto, system-ui, -apple-system, sans-serif; line-height:1.55; }
     .box { max-width:640px; margin:0 auto; padding:15vh 24px 0; }
-    h1 { font-family: Georgia, serif; font-weight:400; font-size:32px; margin:12px 0 0; }
-    .code { font-family: ui-monospace, monospace; font-size:11px; letter-spacing:.2em;
-            text-transform:uppercase; color:#5F6670; }
-    p { color:#4A5058; }
-    a { color:#A63D1E; }
+    h1 { font-weight:500; font-size:32px; margin:12px 0 0; }
+    .code { font-family: "Roboto Mono", ui-monospace, monospace; font-size:12px; letter-spacing:.2em;
+            text-transform:uppercase; color:#566b75; }
+    p { color:#455a64; }
+    a { color:#015688; }
   </style>
 </head>
 <body>

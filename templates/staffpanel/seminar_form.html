@@ -49,10 +49,11 @@
           {{ talkform.id }}
           {% include "staffpanel/_field.html" with field=talkform.title_ru %}
           {% include "staffpanel/_field.html" with field=talkform.speakers_raw %}
+          {% include "staffpanel/_field.html" with field=talkform.abstract_ru %}
           <details class="lang-extra">
-            <summary>{% translate "Ещё" %}</summary>
+            <summary>{% translate "Английская версия (необязательно)" %}</summary>
             {% include "staffpanel/_field.html" with field=talkform.title_en %}
-            {% include "staffpanel/_field.html" with field=talkform.abstract_ru %}
+            {% include "staffpanel/_field.html" with field=talkform.abstract_en %}
           </details>
           {% if talkform.instance.pk %}
             <label class="killswitch">{{ talkform.DELETE }} {% translate "Удалить доклад" %}</label>

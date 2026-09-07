@@ -57,10 +57,13 @@
   --warn-border: #e0cfae;
   --warn-bg: #f6eedf;
 
-  /* Типографика */
-  --font-serif: Spectral, Georgia, "Times New Roman", serif;
-  --font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", monospace;
+  /* Типографика.
+     Гарнитура на весь сайт одна — Roboto, как на iki.cosmos.ru. Засечек нет
+     нигде: заголовки отличаются от текста кеглем и насыщенностью, а не
+     рисунком шрифта. Roboto Mono остаётся только на служебных подписях,
+     датах и цифрах — там нужна одинаковая ширина знака. */
+  --font-sans: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, "Cascadia Mono", monospace;
 
   /* Ритм */
   --wrap: 1180px;

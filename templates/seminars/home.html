@@ -15,7 +15,7 @@
 
   {% if upcoming %}
     {# Тот же блок, что и на странице заседания: заказчику этот вид ближе. #}
-    {% include "seminars/_seminar.html" with seminar=upcoming linked=True %}
+    {% include "seminars/_seminar.html" with seminar=upcoming %}
   {% else %}
     <p class="lede">{% translate "Дата следующего заседания уточняется. Следите за объявлениями." %}</p>
   {% endif %}
@@ -23,25 +23,7 @@
 
 {% if recent %}
 <section class="wrap section section--last">
-  <div class="section__bar">
-    <h3 class="section__title">{% translate "Из архива" %}</h3>
-    <a href="{% url 'seminars:archive' %}">{% translate "Все прошедшие заседания" %} →</a>
-  </div>
-  <ul class="minilist">
-    {% for seminar in recent %}
-      {% for talk in seminar.talks.all %}
-        <li>
-          <a class="minilist__link" href="{{ seminar.get_absolute_url }}">
-            <span class="minilist__date">{{ seminar.date|date:"d.m.Y" }}</span>
-            <span>
-              <span class="minilist__title">{{ talk|tr:"title" }}</span>
-              <span class="minilist__who">{% for s in talk.ordered_speakers %}{{ s|tr:"full_name" }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
-            </span>
-          </a>
-        </li>
-      {% endfor %}
-    {% endfor %}
-  </ul>
+  {% include "seminars/_archive_list.html" with seminars=recent %}
 </section>
 {% endif %}
 

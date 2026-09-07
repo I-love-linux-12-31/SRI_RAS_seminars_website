@@ -50,6 +50,10 @@ class Registration(models.Model):
     attendance = models.CharField(
         _("формат участия"), max_length=10, choices=Attendance.choices, default=Attendance.ONSITE
     )
+    # Гражданство в заявке — не праздный вопрос: бюро пропусков оформляет
+    # пропуск не гражданину РФ дольше, поэтому очные заявки от иностранцев
+    # закрываются раньше остальных (см. Seminar.foreign_registration_open).
+    is_foreign = models.BooleanField(_("не гражданин РФ"), default=False)
     pass_status = models.CharField(
         _("пропуск"), max_length=12, choices=PassStatus.choices, default=PassStatus.NOT_NEEDED
     )
@@ -83,3 +87,8 @@ class Registration(models.Model):
     @property
     def needs_pass(self) -> bool:
         return self.attendance == self.Attendance.ONSITE and self.seminar.pass_required
+
+    @property
+    def citizenship_display(self) -> str:
+        """Для списка и выгрузки: бюро пропусков смотрит именно на это."""
+        return str(_("не РФ") if self.is_foreign else _("РФ"))

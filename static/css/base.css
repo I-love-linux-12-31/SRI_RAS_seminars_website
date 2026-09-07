@@ -93,7 +93,7 @@ button {
 }
 .lang a[aria-current="true"] {
   color: var(--ink-on-dark);
-  font-weight: 600;
+  font-weight: 500;
 }
 .lang span {
   /* Разделитель тем же цветом, что и ссылки: более тусклый не добирал
@@ -135,8 +135,7 @@ button {
 }
 .masthead h1 {
   margin: 0;
-  font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(28px, 3.4vw, 38px);
   line-height: 1.1;
   letter-spacing: -0.01em;
@@ -196,7 +195,7 @@ button {
   color: var(--ink);
 }
 .nav__links a[aria-current="page"] {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
   border-bottom-color: var(--accent);
 }
@@ -265,7 +264,7 @@ main {
   padding-block: clamp(28px, 4vw, 48px);
 }
 .footer__brand {
-  font-family: var(--font-serif);
+  font-weight: 500;
   font-size: 22px;
   color: var(--ink-on-dark);
 }

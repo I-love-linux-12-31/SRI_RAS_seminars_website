@@ -56,6 +56,7 @@
             <th>{% translate "Должность" %}</th>
             <th>{% translate "Почта" %}</th>
             <th>{% translate "Формат" %}</th>
+            <th>{% translate "Гражданство" %}</th>
             <th>{% translate "Пропуск" %}</th>
             <th>{% translate "Заявка" %}</th>
           </tr>
@@ -69,6 +70,13 @@
               <td data-label="{% translate 'Почта' %}"><a class="mono" href="mailto:{{ r.email }}">{{ r.email }}</a></td>
               <td data-label="{% translate 'Формат' %}">
                 <span class="badge {% if r.attendance == 'online' %}badge--ok{% endif %}">{{ r.get_attendance_display }}</span>
+              </td>
+              <td data-label="{% translate 'Гражданство' %}">
+                {% if r.is_foreign %}
+                  <span class="badge">{% translate "не РФ" %}</span>
+                {% else %}
+                  {% translate "РФ" %}
+                {% endif %}
               </td>
               <td data-label="{% translate 'Пропуск' %}">
                 <form method="post" action="{% url 'staffpanel:pass_status' r.pk %}" class="passform">

@@ -287,3 +287,88 @@ def test_failed_registration_queues_nothing(client, seminar, db_task_backend):
     client.post(url_for(seminar), payload(consent_pd=""))
 
     assert TaskRecord.objects.count() == 0
+
+
+# --- Гражданство --------------------------------------------------------------
+# Пропуск не гражданину РФ бюро оформляет дольше, поэтому очные заявки от
+# иностранцев закрываются раньше остальных — на foreign_extra_lead_hours.
+
+
+def test_citizenship_is_saved(client, seminar):
+    client.post(url_for(seminar), payload(is_foreign="on"))
+
+    assert Registration.objects.get().is_foreign is True
+
+
+def test_citizenship_defaults_to_russian(client, seminar):
+    client.post(url_for(seminar), payload())
+
+    assert Registration.objects.get().is_foreign is False
+
+
+def test_foreign_onsite_is_closed_earlier(client):
+    """Общий приём ещё открыт, а очный для иностранцев — уже нет."""
+    seminar = make_seminar(
+        timezone.localdate() + timedelta(days=10),
+        registration_closes_at=timezone.now() + timedelta(hours=1),
+    )
+
+    response = client.post(url_for(seminar), payload(attendance="onsite", is_foreign="on"))
+
+    assert response.status_code == 422
+    assert Registration.objects.count() == 0
+    assert "не граждан РФ" in response.content.decode()
+
+
+def test_russian_citizen_still_registers_in_the_same_window(client):
+    seminar = make_seminar(
+        timezone.localdate() + timedelta(days=10),
+        registration_closes_at=timezone.now() + timedelta(hours=1),
+    )
+
+    response = client.post(url_for(seminar), payload(attendance="onsite"))
+
+    assert response.status_code == 200
+    assert Registration.objects.count() == 1
+
+
+def test_foreign_online_is_not_limited(client):
+    """Раньше срока закрывается оформление пропуска, а онлайн он не нужен."""
+    seminar = make_seminar(
+        timezone.localdate() + timedelta(days=10),
+        registration_closes_at=timezone.now() + timedelta(hours=1),
+    )
+
+    response = client.post(url_for(seminar), payload(attendance="online", is_foreign="on"))
+
+    assert response.status_code == 200
+    assert Registration.objects.get().is_foreign is True
+
+
+def test_extra_lead_hours_come_from_settings(client):
+    from apps.core.models import SiteSettings
+
+    site = SiteSettings.load()
+    site.foreign_extra_lead_hours = 0
+    site.save()
+    seminar = make_seminar(
+        timezone.localdate() + timedelta(days=10),
+        registration_closes_at=timezone.now() + timedelta(hours=1),
+    )
+
+    response = client.post(url_for(seminar), payload(attendance="onsite", is_foreign="on"))
+
+    assert response.status_code == 200
+    assert Registration.objects.count() == 1
+
+
+def test_checkbox_is_hidden_for_online_only_seminars(client):
+    """Галочка нужна ради пропуска: без очного участия она бессмысленна."""
+    seminar = make_seminar(
+        timezone.localdate() + timedelta(days=10),
+        seminar_format=Seminar.Format.ONLINE,
+    )
+
+    content = client.get(url_for(seminar)).content.decode()
+
+    assert "Я не гражданин РФ" not in content

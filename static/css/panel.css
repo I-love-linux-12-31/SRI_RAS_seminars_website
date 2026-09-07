@@ -78,7 +78,7 @@
   color: var(--ink);
 }
 .tab--on {
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
   background: var(--surface-raised);
   border-color: var(--rule);
@@ -111,7 +111,7 @@
 }
 .stat__value {
   margin: 8px 0 0;
-  font-family: var(--font-serif);
+  font-weight: 500;
   font-size: 28px;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -163,7 +163,7 @@
 }
 .dtable__title {
   display: block;
-  font-family: var(--font-serif);
+  font-weight: 500;
   font-size: 20px;
   line-height: 1.3;
   color: var(--ink);
@@ -306,7 +306,7 @@
 }
 .formsummary__title {
   margin: 0;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 17px;
   color: var(--error-ink);
 }
