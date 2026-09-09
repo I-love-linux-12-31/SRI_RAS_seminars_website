@@ -1,0 +1,21 @@
+{% load i18n %}
+{% comment %}
+Удаление вложенной формы — доклада или материала.
+
+Чекбокс формсета остаётся в разметке: без него Django об удалении не узнает,
+и без JavaScript панель работает по-старому. Скрипт прячет чекбокс и отдаёт
+управление кнопке, которая сначала переспрашивает.
+
+Параметры включения:
+  field   — поле DELETE вложенной формы;
+  label   — подпись («Удалить доклад»);
+  confirm — вопрос перед удалением;
+  undo    — подпись кнопки, когда удаление уже отмечено;
+  note    — пометка у строки, помеченной к удалению.
+{% endcomment %}
+<div class="killswitch" data-killswitch>
+  <label class="killswitch__box">{{ field }} {{ label }}</label>
+  <button type="button" class="btn btn--sm btn--danger killswitch__btn"
+          data-delete-inline data-confirm="{{ confirm }}" data-undo="{{ undo }}">{{ label }}</button>
+  <span class="killswitch__note">{{ note }}</span>
+</div>
