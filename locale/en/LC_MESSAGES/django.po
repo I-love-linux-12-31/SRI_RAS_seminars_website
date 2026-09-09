@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SRAofRAS seminars\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-07 15:04+0300\n"
+"POT-Creation-Date: 2026-09-09 17:33+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: \n"
 "Language-Team: English\n"
@@ -349,7 +349,7 @@ msgstr "venue"
 msgid "формат"
 msgstr "format"
 
-#: apps/seminars/models.py:106 templates/seminars/_seminar.html:92
+#: apps/seminars/models.py:106 templates/seminars/_seminar.html:97
 msgid "ссылка на видеоконференцию"
 msgstr "video conference link"
 
@@ -589,7 +589,7 @@ msgid "Ошибка сервера"
 msgstr "Server error"
 
 #: templates/500.html:10 templates/base.html:6 templates/base.html:39
-#: templates/base.html:93 templates/registrations/email/confirmation.txt:15
+#: templates/base.html:101 templates/registrations/email/confirmation.txt:15
 msgid "Научный семинар ИКИ РАН"
 msgstr "IKI RAS Scientific Seminar"
 
@@ -614,7 +614,7 @@ msgstr ""
 "Scientific seminar of the Space Research Institute of the Russian Academy of "
 "Sciences: the next meeting and the archive of talks."
 
-#: templates/base.html:20 templates/base.html:94
+#: templates/base.html:20 templates/base.html:102
 msgid "Институт космических исследований Российской академии наук"
 msgstr "Space Research Institute of the Russian Academy of Sciences"
 
@@ -640,47 +640,51 @@ msgstr ""
 msgid "Основная навигация"
 msgstr "Main navigation"
 
-#: templates/base.html:48
+#: templates/base.html:53
+msgid "Меню"
+msgstr "Menu"
+
+#: templates/base.html:56
 msgid "Главная"
 msgstr "Home"
 
-#: templates/base.html:49 templates/seminars/about.html:4
+#: templates/base.html:57 templates/seminars/about.html:4
 #: templates/seminars/about.html:8
 msgid "О семинаре"
 msgstr "About"
 
-#: templates/base.html:50
+#: templates/base.html:58
 msgid "Архив"
 msgstr "Archive"
 
-#: templates/base.html:52
+#: templates/base.html:60
 msgid "Управление"
 msgstr "Manage"
 
-#: templates/base.html:69 templates/registrations/page.html:4
+#: templates/base.html:77 templates/registrations/page.html:4
 #: templates/registrations/page.html:10
 msgid "Регистрация на семинар"
 msgstr "Seminar registration"
 
-#: templates/base.html:70 templates/base.html:84
+#: templates/base.html:78 templates/base.html:92
 #: templates/registrations/_notice.html:5
 #: templates/registrations/_success.html:27
 msgid "Закрыть"
 msgstr "Close"
 
-#: templates/base.html:97
+#: templates/base.html:105
 msgid "руководитель семинара"
 msgstr "seminar chair"
 
-#: templates/base.html:99
+#: templates/base.html:107
 msgid "секретарь семинара"
 msgstr "seminar secretary"
 
-#: templates/base.html:103
+#: templates/base.html:111
 msgid "контакты"
 msgstr "contacts"
 
-#: templates/base.html:107 templates/core/privacy.html:4
+#: templates/base.html:115 templates/core/privacy.html:4
 #: templates/core/privacy.html:8
 msgid "Обработка персональных данных"
 msgstr "Personal data processing"
@@ -810,7 +814,7 @@ msgid "Отправить заявку"
 msgstr "Submit registration"
 
 #: templates/registrations/_form.html:100
-#: templates/staffpanel/seminar_form.html:116
+#: templates/staffpanel/seminar_form.html:124
 msgid "Отмена"
 msgstr "Cancel"
 
@@ -876,14 +880,14 @@ msgid "Доклад"
 msgstr "Talk"
 
 #: templates/registrations/email/confirmation.txt:6
-#: templates/seminars/_seminar.html:75
+#: templates/seminars/_seminar.html:80
 #: templates/staffpanel/seminar_list.html:29
 #: templates/staffpanel/seminar_list.html:39
 msgid "Дата"
 msgstr "Date"
 
 #: templates/registrations/email/confirmation.txt:7
-#: templates/seminars/_seminar.html:79
+#: templates/seminars/_seminar.html:84
 msgid "Место"
 msgstr "Venue"
 
@@ -933,55 +937,59 @@ msgstr "Meeting on %(day)s"
 msgid "Аннотация заседания"
 msgstr "Meeting abstract"
 
-#: templates/seminars/_seminar.html:26 templates/seminars/_seminar.html:50
+#: templates/seminars/_seminar.html:26
 msgid "Показать аннотацию целиком"
 msgstr "Show the whole abstract"
 
-#: templates/seminars/_seminar.html:27 templates/seminars/_seminar.html:51
+#: templates/seminars/_seminar.html:27 templates/seminars/_seminar.html:56
 msgid "Свернуть"
 msgstr "Collapse"
 
-#: templates/seminars/_seminar.html:58
+#: templates/seminars/_seminar.html:55
+msgid "Показать аннотацию"
+msgstr "Show the abstract"
+
+#: templates/seminars/_seminar.html:63
 msgid "открыть"
 msgstr "open"
 
-#: templates/seminars/_seminar.html:66
+#: templates/seminars/_seminar.html:71
 msgid "Доклады этого заседания ещё не объявлены."
 msgstr "The talks of this meeting have not been announced yet."
 
-#: templates/seminars/_seminar.html:73
+#: templates/seminars/_seminar.html:78
 #: templates/staffpanel/seminar_form.html:21
 msgid "Когда и где"
 msgstr "When and where"
 
-#: templates/seminars/_seminar.html:77
+#: templates/seminars/_seminar.html:82
 msgid "Время"
 msgstr "Time"
 
-#: templates/seminars/_seminar.html:81
+#: templates/seminars/_seminar.html:86
 #: templates/staffpanel/registrations.html:58
 #: templates/staffpanel/registrations.html:71
 msgid "Формат"
 msgstr "Format"
 
-#: templates/seminars/_seminar.html:88
+#: templates/seminars/_seminar.html:93
 msgid "Трансляция"
 msgstr "Broadcast"
 
-#: templates/seminars/_seminar.html:99
+#: templates/seminars/_seminar.html:104
 msgid "Записаться и заказать пропуск"
 msgstr "Register and request a pass"
 
-#: templates/seminars/_seminar.html:99 templates/seminars/home.html:7
+#: templates/seminars/_seminar.html:104 templates/seminars/home.html:7
 msgid "Записаться"
 msgstr "Register"
 
-#: templates/seminars/_seminar.html:101
+#: templates/seminars/_seminar.html:106
 #, python-format
 msgid "Приём заявок — до %(deadline)s"
 msgstr "Registration is open until %(deadline)s"
 
-#: templates/seminars/_seminar.html:103
+#: templates/seminars/_seminar.html:108
 msgid "Приём заявок закрыт."
 msgstr "Registration is closed."
 
@@ -1250,50 +1258,80 @@ msgstr "Talks"
 msgid "Удалить доклад"
 msgstr "Delete talk"
 
-#: templates/staffpanel/seminar_form.html:64
+#: templates/staffpanel/seminar_form.html:60
+#, python-format
+msgid ""
+"Удалить доклад «%(title)s»? Вместе с ним исчезнут и его материалы. Удаление "
+"произойдёт при сохранении заседания."
+msgstr ""
+"Delete the talk “%(title)s”? Its materials will go with it. The deletion "
+"happens when you save the meeting."
+
+#: templates/staffpanel/seminar_form.html:61
+msgid "Вернуть доклад"
+msgstr "Keep the talk"
+
+#: templates/staffpanel/seminar_form.html:62
+#: templates/staffpanel/seminar_form.html:98
+msgid "удалится при сохранении"
+msgstr "will be deleted on save"
+
+#: templates/staffpanel/seminar_form.html:68
 msgid "Ещё доклад"
 msgstr "One more talk"
 
-#: templates/staffpanel/seminar_form.html:66
+#: templates/staffpanel/seminar_form.html:70
 msgid "Материалы к докладу прикладываются после сохранения."
 msgstr "Materials are attached to a talk after the meeting is saved."
 
-#: templates/staffpanel/seminar_form.html:76
+#: templates/staffpanel/seminar_form.html:80
 #, python-format
 msgid "Материалы доклада «%(title)s»"
 msgstr "Materials of the talk “%(title)s”"
 
-#: templates/staffpanel/seminar_form.html:77
+#: templates/staffpanel/seminar_form.html:81
 msgid "Файл или ссылка: аннотация, презентация, видеозапись."
 msgstr "A file or a link: abstract, slides, video recording."
 
-#: templates/staffpanel/seminar_form.html:91
+#: templates/staffpanel/seminar_form.html:95
 msgid "Удалить материал"
 msgstr "Delete material"
 
 #: templates/staffpanel/seminar_form.html:96
+#, python-format
+msgid ""
+"Удалить материал «%(kind)s»? Удаление произойдёт при сохранении заседания."
+msgstr ""
+"Delete the material “%(kind)s”? The deletion happens when you save the "
+"meeting."
+
+#: templates/staffpanel/seminar_form.html:97
+msgid "Вернуть материал"
+msgstr "Keep the material"
+
+#: templates/staffpanel/seminar_form.html:104
 msgid "Ещё материал"
 msgstr "One more material"
 
-#: templates/staffpanel/seminar_form.html:101
+#: templates/staffpanel/seminar_form.html:109
 msgid "Материалы"
 msgstr "Materials"
 
-#: templates/staffpanel/seminar_form.html:102
+#: templates/staffpanel/seminar_form.html:110
 msgid ""
 "Материалы прикладываются к докладу — добавьте доклад и сохраните заседание."
 msgstr "Materials belong to a talk — add a talk and save the meeting."
 
-#: templates/staffpanel/seminar_form.html:108
+#: templates/staffpanel/seminar_form.html:116
 msgid "Публикация и приём заявок"
 msgstr "Publication and registration"
 
-#: templates/staffpanel/seminar_form.html:115
+#: templates/staffpanel/seminar_form.html:123
 #: templates/staffpanel/settings.html:68
 msgid "Сохранить"
 msgstr "Save"
 
-#: templates/staffpanel/seminar_form.html:118
+#: templates/staffpanel/seminar_form.html:126
 msgid "Посмотреть"
 msgstr "View"
 

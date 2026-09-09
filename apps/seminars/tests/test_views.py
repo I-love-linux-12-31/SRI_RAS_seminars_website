@@ -164,6 +164,21 @@ def test_other_seminars_go_under_the_page_full_width():
     assert content.index("</aside>") < content.index("Другие заседания")
 
 
+def test_menu_collapses_into_a_burger_but_keeps_the_links():
+    """На телефоне пункты уезжают в бургер, но остаются в разметке.
+
+    Прячет их скрипт (класс .nav--js), поэтому без JavaScript меню никуда
+    не девается — иначе на узком экране сайт остался бы без навигации.
+    """
+    content = get(reverse("seminars:home"))
+
+    assert "data-nav-toggle" in content
+    assert 'aria-controls="nav-links"' in content
+    assert 'id="nav-links"' in content
+    for item in ("Главная", "О семинаре", "Архив"):
+        assert item in content, item
+
+
 def test_talk_abstract_falls_back_to_russian_without_a_translation():
     seminar = make_seminar(timezone.localdate() + timedelta(days=3))
     add_talk(
@@ -192,8 +207,12 @@ def test_english_page_shows_the_english_talk_abstract():
     assert "Аннотация по-русски." not in content
 
 
-def test_long_abstract_opens_in_a_full_width_sheet():
-    """Разметка отдаёт текст целиком, а скрипту нужны зацепки: заголовок и блок."""
+def test_talk_abstract_opens_in_a_full_width_sheet():
+    """Заказчик просил прятать аннотацию доклада за кнопкой «Показать аннотацию».
+
+    Прячет её скрипт: разметка отдаёт текст целиком, иначе без JavaScript
+    аннотация пропала бы совсем. Проверяем зацепки, по которым он работает.
+    """
     seminar = make_seminar(timezone.localdate() + timedelta(days=3))
     add_talk(
         seminar,
@@ -204,7 +223,10 @@ def test_long_abstract_opens_in_a_full_width_sheet():
 
     content = get(seminar.get_absolute_url())
 
+    assert "Очень длинная аннотация." in content, "без JavaScript текст должен остаться"
+    assert "data-longtext-hide" in content, "аннотацию доклада прячем целиком"
     assert 'data-longtext-title="Турбулентность солнечного ветра"' in content
+    assert "Показать аннотацию" in content
     assert 'id="longtext-sheet"' in content, "всплывающему блоку нужен контейнер в base.html"
 
 

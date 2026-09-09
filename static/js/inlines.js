@@ -40,6 +40,34 @@
     if (kill) kill.remove();
   }
 
+  // Удаление вложенной формы кнопкой, а не чекбоксом: галочку легко поставить
+  // мимоходом и не заметить, а доклад с материалами исчезает без спроса.
+  // Сам чекбокс формсета остаётся в разметке — Django узнаёт об удалении
+  // только по нему, — но прячется, и его состоянием управляет кнопка.
+  document.querySelectorAll("[data-killswitch]").forEach(function (kill) {
+    var box = kill.querySelector('input[type="checkbox"]');
+    var button = kill.querySelector("[data-delete-inline]");
+    var row = kill.closest("[data-inline]");
+    if (!box || !button || !row) return;
+
+    var label = button.textContent;
+    kill.classList.add("killswitch--js");
+
+    function render() {
+      row.classList.toggle("inline--doomed", box.checked);
+      button.textContent = box.checked ? button.dataset.undo : label;
+    }
+
+    button.addEventListener("click", function () {
+      // Переспрашиваем только на удаление: снять пометку не страшно.
+      if (!box.checked && !window.confirm(button.dataset.confirm)) return;
+      box.checked = !box.checked;
+      render();
+    });
+
+    render();
+  });
+
   document.addEventListener("click", function (event) {
     var button = event.target.closest("[data-add-inline]");
     if (!button) return;

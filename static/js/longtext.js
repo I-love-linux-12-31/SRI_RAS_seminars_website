@@ -55,7 +55,13 @@
   }
 
   function setup(node) {
-    if (node.scrollHeight <= LIMIT + 40) return;
+    // data-longtext-hide: текст прячется целиком и открывается только кнопкой.
+    // Длину при этом не меряем — иначе у одного доклада на странице была бы
+    // аннотация, у соседнего кнопка, и список докладов выглядел бы вразнобой.
+    var hidden = "longtextHide" in node.dataset;
+    if (!hidden && node.scrollHeight <= LIMIT + 40) return;
+
+    var folded = hidden ? "longtext--hidden" : "longtext--clipped";
 
     var button = document.createElement("button");
     button.type = "button";
@@ -63,7 +69,7 @@
     button.textContent = node.dataset.more;
 
     if (sheetWorks()) {
-      node.classList.add("longtext--clipped");
+      node.classList.add(folded);
       button.addEventListener("click", function () {
         open(node);
       });
@@ -72,13 +78,13 @@
       button.setAttribute("aria-expanded", "false");
 
       function collapse(yes) {
-        node.classList.toggle("longtext--clipped", yes);
+        node.classList.toggle(folded, yes);
         button.setAttribute("aria-expanded", String(!yes));
         button.textContent = yes ? node.dataset.more : node.dataset.less;
       }
 
       button.addEventListener("click", function () {
-        collapse(!node.classList.contains("longtext--clipped"));
+        collapse(!node.classList.contains(folded));
       });
       collapse(true);
     }

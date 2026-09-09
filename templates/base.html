@@ -44,7 +44,14 @@
 
 <nav class="nav" aria-label="{% translate 'Основная навигация' %}">
   <div class="wrap nav__inner">
-    <div class="nav__links">
+    {% comment %}Бургер появляется только на узких экранах и только когда работает
+    скрипт: без него прятать пункты меню не за что, и они остаются на виду.{% endcomment %}
+    <button type="button" class="nav__burger" data-nav-toggle
+            aria-expanded="false" aria-controls="nav-links">
+      <span class="nav__burger-bars" aria-hidden="true"></span>
+      {% translate "Меню" %}
+    </button>
+    <div class="nav__links" id="nav-links">
       <a href="{% url 'seminars:home' %}" {% if nav == 'home' %}aria-current="page"{% endif %}>{% translate "Главная" %}</a>
       <a href="{% url 'seminars:about' %}" {% if nav == 'about' %}aria-current="page"{% endif %}>{% translate "О семинаре" %}</a>
       <a href="{% url 'seminars:archive' %}" {% if nav == 'archive' %}aria-current="page"{% endif %}>{% translate "Архив" %}</a>
@@ -108,9 +115,12 @@
 </footer>
 
 <script src="{% static 'js/htmx.min.js' %}" defer></script>
+<script src="{% static 'js/nav.js' %}" defer></script>
 <script src="{% static 'js/modal.js' %}" defer></script>
 <script src="{% static 'js/longtext.js' %}" defer></script>
 {% if user.is_staff %}<script src="{% static 'js/inlines.js' %}" defer></script>{% endif %}
 
 </body>
 </html>
+
+<!-- Made by Reina Smith(Yaroslav Kuznetsov) for Space Research Institute of the Russian Academy of Sciences 2026 -->

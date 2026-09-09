@@ -56,7 +56,11 @@
             {% include "staffpanel/_field.html" with field=talkform.abstract_en %}
           </details>
           {% if talkform.instance.pk %}
-            <label class="killswitch">{{ talkform.DELETE }} {% translate "Удалить доклад" %}</label>
+            {% translate "Удалить доклад" as kill_label %}
+            {% blocktranslate asvar kill_confirm with title=talkform.instance.title_ru|truncatechars:60 %}Удалить доклад «{{ title }}»? Вместе с ним исчезнут и его материалы. Удаление произойдёт при сохранении заседания.{% endblocktranslate %}
+            {% translate "Вернуть доклад" as kill_undo %}
+            {% translate "удалится при сохранении" as kill_note %}
+            {% include "staffpanel/_killswitch.html" with field=talkform.DELETE label=kill_label confirm=kill_confirm undo=kill_undo note=kill_note %}
           {% endif %}
         </div>
       {% endfor %}
@@ -87,7 +91,11 @@
             {% include "staffpanel/_field.html" with field=matform.url %}
             {% if matform.non_field_errors %}<p class="formerror">{{ matform.non_field_errors.0 }}</p>{% endif %}
             {% if matform.instance.pk %}
-              <label class="killswitch">{{ matform.DELETE }} {% translate "Удалить материал" %}</label>
+              {% translate "Удалить материал" as kill_label %}
+              {% blocktranslate asvar kill_confirm with kind=matform.instance.get_kind_display %}Удалить материал «{{ kind }}»? Удаление произойдёт при сохранении заседания.{% endblocktranslate %}
+              {% translate "Вернуть материал" as kill_undo %}
+              {% translate "удалится при сохранении" as kill_note %}
+              {% include "staffpanel/_killswitch.html" with field=matform.DELETE label=kill_label confirm=kill_confirm undo=kill_undo note=kill_note %}
             {% endif %}
           </div>
         {% endfor %}

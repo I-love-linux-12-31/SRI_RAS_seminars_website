@@ -200,6 +200,122 @@ button {
   border-bottom-color: var(--accent);
 }
 
+.nav__cta {
+  flex: none;
+  margin-block: 9px;
+}
+
+/* Кнопка бургера. На широком экране её нет вовсе: меню и так помещается
+   в строку. Показывает её только медиазапрос ниже — и только вместе с
+   классом .nav--js, который вешает скрипт. */
+.nav__burger {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--tap);
+  padding: 0 4px 0 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 17.5px;
+  color: var(--ink);
+}
+.nav__burger-bars {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+}
+.nav__burger-bars::before,
+.nav__burger-bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: transform 0.16s ease, top 0.16s ease;
+}
+.nav__burger-bars::before {
+  top: -6px;
+}
+.nav__burger-bars::after {
+  top: 6px;
+}
+/* Раскрытое меню — крестик: полоски сходятся и перекрещиваются. */
+.nav__burger[aria-expanded="true"] .nav__burger-bars {
+  background: transparent;
+}
+.nav__burger[aria-expanded="true"] .nav__burger-bars::before,
+.nav__burger[aria-expanded="true"] .nav__burger-bars::after {
+  top: 0;
+}
+.nav__burger[aria-expanded="true"] .nav__burger-bars::before {
+  transform: rotate(45deg);
+}
+.nav__burger[aria-expanded="true"] .nav__burger-bars::after {
+  transform: rotate(-45deg);
+}
+
+/* На экране телефона пункты меню в строку не помещаются: «Архив» уезжал под
+   кнопку «Записаться», а горизонтальная прокрутка спрятана (scrollbar-width:
+   none) и намекнуть на себя ничем не может. Поэтому пункты уходят в бургер,
+   а в строке остаются только он и кнопка записи — шапка занимает одну строку
+   вместо трёх.
+
+   Без скрипта (.nav--js не появится) пункты просто переносятся по строкам:
+   меню, которое не открыть, было бы хуже высокой шапки. */
+@media (max-width: 640px) {
+  .nav__inner {
+    flex-wrap: wrap;
+    gap: 0 14px;
+  }
+  .nav__links {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 0 20px;
+  }
+  .nav__links a {
+    padding-block: 12px;
+  }
+  /* Без скрипта пункты остаются на виду, а кнопка записи уходит под них во всю
+     ширину: в одну строку с ними она не помещается. */
+  .nav:not(.nav--js) .nav__cta {
+    flex: 1 1 100%;
+    margin-block: 6px 12px;
+  }
+
+  .nav--js .nav__burger {
+    display: inline-flex;
+  }
+  /* Со скриптом пункты уезжают под строку с бургером и кнопкой записи. */
+  .nav--js .nav__links {
+    order: 3;
+    display: none;
+  }
+  .nav--js .nav__links--open {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 8px;
+    border-top: 1px solid var(--rule-soft);
+  }
+  /* В колонке подчёркивание текущего пункта читается как разделитель строк,
+     поэтому метка переезжает влево. */
+  .nav--js .nav__links--open a {
+    padding: 12px 0 12px 14px;
+    border-bottom: 0;
+    border-left: 2px solid transparent;
+  }
+  .nav--js .nav__links--open a[aria-current="page"] {
+    border-left-color: var(--accent);
+  }
+}
+
 /* --- Кнопки --------------------------------------------------------------- */
 
 .btn {
@@ -239,6 +355,16 @@ button {
 .btn--ghost:hover {
   background: var(--ink);
   color: var(--bg);
+}
+.btn--danger {
+  border-color: var(--error-border);
+  background: var(--error-bg);
+  color: var(--error-ink);
+}
+.btn--danger:hover {
+  border-color: var(--error-ink);
+  background: var(--error-ink);
+  color: #ffffff;
 }
 .btn--sm {
   min-height: 38px;

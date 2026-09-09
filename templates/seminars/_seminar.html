@@ -43,10 +43,14 @@
           <div class="talk__body">
             <p class="mono-label">{% translate "Доклад" %}</p>
             <h3 class="talk__title">{{ talk|tr:"title" }}</h3>
+            {% comment %}data-longtext-hide: аннотацию доклада скрываем целиком,
+            а не подрезаем — в списке из двух-трёх докладов обрывки текста мешают
+            сравнивать доклады между собой. Разметка отдаёт текст полностью, и
+            без JavaScript он остаётся на странице.{% endcomment %}
             {% if talk|tr:"abstract" %}
-              <div class="talk__abstract" data-longtext
+              <div class="talk__abstract" data-longtext data-longtext-hide
                    data-longtext-title="{{ talk|tr:'title' }}"
-                   data-more="{% translate 'Показать аннотацию целиком' %}"
+                   data-more="{% translate 'Показать аннотацию' %}"
                    data-less="{% translate 'Свернуть' %}">{{ talk|tr:"abstract"|linebreaks }}</div>
             {% endif %}
             {% if talk.materials.all %}

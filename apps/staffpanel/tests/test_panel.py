@@ -177,10 +177,14 @@ def saved_talk_payload(talk, **overrides) -> dict:
 
 
 def material_payload(talk, **fields) -> dict:
-    """Формсет материалов идёт своей группой на каждый доклад."""
+    """Формсет материалов идёт своей группой на каждый доклад.
+
+    Без полей отдаёт один management_form: у формы материала есть значение
+    по умолчанию в поле «тип», и пустая лишняя строка считалась бы заполненной.
+    """
     prefix = f"materials-{talk.pk}"
     data = {
-        f"{prefix}-TOTAL_FORMS": "1",
+        f"{prefix}-TOTAL_FORMS": "1" if fields else "0",
         f"{prefix}-INITIAL_FORMS": "0",
         f"{prefix}-MIN_NUM_FORMS": "0",
         f"{prefix}-MAX_NUM_FORMS": "1000",
@@ -337,6 +341,60 @@ def test_summary_collects_errors_from_talks_and_materials(as_secretary):
 def talk_with_seminar():
     seminar = make_seminar(timezone.localdate() + timedelta(days=5))
     return seminar, add_talk(seminar, "Доклад", [("Иванов Иван Иванович", "ИКИ РАН")])
+
+
+def test_talk_is_deleted_through_the_formset_checkbox(as_secretary):
+    """Кнопка удаления — это обёртка над чекбоксом формсета, и он должен работать."""
+    seminar = make_seminar(timezone.localdate() + timedelta(days=20))
+    talk = add_talk(seminar, "Лишний доклад", [("Иванов И. И.", "ИКИ РАН")])
+    keeper = add_talk(seminar, "Нужный доклад", [("Петров П. П.", "ИКИ РАН")])
+
+    payload = seminar_payload(
+        **{
+            "talks-TOTAL_FORMS": "2",
+            "talks-INITIAL_FORMS": "2",
+            "talks-0-id": talk.pk,
+            "talks-0-title_ru": talk.title_ru,
+            "talks-0-speakers_raw": "Иванов Иван Иванович — ИКИ РАН",
+            "talks-0-DELETE": "on",
+            "talks-1-id": keeper.pk,
+            "talks-1-title_ru": keeper.title_ru,
+            "talks-1-title_en": "",
+            "talks-1-abstract_ru": "",
+            "talks-1-abstract_en": "",
+            "talks-1-speakers_raw": "Петров Пётр Петрович — ИКИ РАН",
+        }
+    )
+
+    # У каждого сохранённого доклада своя группа материалов — без её
+    # management_form форма не проходит проверку.
+    payload |= material_payload(talk) | material_payload(keeper)
+
+    response = as_secretary.post(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk}), payload
+    )
+
+    assert response.status_code == 302
+    assert [t.title_ru for t in seminar.talks.all()] == ["Нужный доклад"]
+
+
+def test_delete_button_keeps_the_checkbox_and_asks_before_deleting(as_secretary):
+    """Заказчик просил кнопку с подтверждением вместо галочки.
+
+    Чекбокс формсета остаётся в разметке — без него Django об удалении не
+    узнает и панель перестанет работать без JavaScript, — но рядом стоит
+    кнопка, а вопрос для неё готовит шаблон.
+    """
+    seminar = make_seminar(timezone.localdate() + timedelta(days=20))
+    add_talk(seminar, "Турбулентность солнечного ветра", [("Иванов И. И.", "ИКИ РАН")])
+
+    content = as_secretary.get(
+        reverse("staffpanel:seminar_edit", kwargs={"pk": seminar.pk})
+    ).content.decode()
+
+    assert 'name="talks-0-DELETE"' in content
+    assert "data-delete-inline" in content
+    assert "Удалить доклад «Турбулентность солнечного ветра»?" in content
 
 
 def test_material_is_attached_to_the_talk(as_secretary):

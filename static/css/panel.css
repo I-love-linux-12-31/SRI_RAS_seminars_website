@@ -456,17 +456,51 @@
 
 .killswitch {
   display: flex;
-  gap: 9px;
+  flex-wrap: wrap;
+  gap: 9px 12px;
   align-items: center;
   font-size: 16px;
   color: var(--ink-muted);
   min-height: var(--tap);
+}
+.killswitch__box {
+  display: flex;
+  gap: 9px;
+  align-items: center;
   cursor: pointer;
 }
 .killswitch input {
   width: 20px;
   height: 20px;
   accent-color: var(--accent);
+}
+/* Кнопку показывает скрипт: без него удаление остаётся чекбоксом — переспросить
+   всё равно некому, а формсет должен работать и без JavaScript. */
+.killswitch__btn,
+.killswitch__note {
+  display: none;
+}
+.killswitch--js .killswitch__box {
+  display: none;
+}
+.killswitch--js .killswitch__btn {
+  display: inline-flex;
+}
+.inline--doomed .killswitch__note {
+  display: inline;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--error-ink);
+}
+/* Строка, помеченная к удалению: пропадёт, когда форму сохранят. */
+.inline--doomed {
+  border-color: var(--error-border);
+  background: var(--error-bg);
+}
+.inline--doomed > *:not(.killswitch) {
+  opacity: 0.5;
 }
 
 .adminform__actions {
